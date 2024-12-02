@@ -1,1 +1,6 @@
-data/spotify_dataset.csv
+**/*.csv
+**/*.pkl
+**/*.pyc
+**/*.mtx
+**/*.npy
+**/*.pth
