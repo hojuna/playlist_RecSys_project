@@ -11,7 +11,9 @@ argparser.add_argument("--file-path", type=str, default="data/playlist_song_matr
 argparser.add_argument("--save-path", type=str, default="data/split_data")
 
 
-def split_data_by_user(sparse_matrix, train_ratio=0.7, valid_ratio=0.2, test_ratio=0.1):
+def split_data_by_user(
+    sparse_matrix: csr_matrix, train_ratio: float = 0.7, valid_ratio: float = 0.2, test_ratio: float = 0.1
+) -> tuple[csr_matrix, csr_matrix, csr_matrix]:
     """사용자별로 아이템을 train/valid/test로 분할"""
 
     n_users = sparse_matrix.shape[0]

@@ -5,6 +5,8 @@ from models import MLPModel
 from scipy.io import mmread
 from tqdm import tqdm
 from argparse import ArgumentParser
+import torch.nn as nn
+from scipy.sparse import csr_matrix
 
 argparser = ArgumentParser("preprocess_dataset")
 argparser.add_argument("--model-path", type=str, default="mlp_baseline/save_model/best_model.pt")
@@ -16,7 +18,14 @@ argparser.add_argument("--num-negative", type=int, default=100)
 
 
 def calculate_metrics(
-    model, test_matrix, train_matrix, valid_matrix, device, k_values=[1, 5, 10], num_negative=100, eval_mode="total"
+    model: nn.Module,
+    test_matrix: csr_matrix,
+    train_matrix: csr_matrix,
+    valid_matrix: csr_matrix,
+    device: str,
+    k_values: list[int] = [1, 5, 10],
+    num_negative: int = 10,
+    eval_mode: str = "total",
 ):
     """모델 평가 함수"""
     model.eval()
@@ -48,7 +57,7 @@ def calculate_metrics(
 
             # 테스트 아이템과 랜덤 샘플링된 negative 아이템들을 합쳐서 평가
             sampled_items = np.random.choice(
-                candidate_items, size=min(len(candidate_items), num_negative), replace=False
+                candidate_items, size=min(len(candidate_items), num_negative * len(test_items)), replace=False
             )
 
             if eval_mode == "total":

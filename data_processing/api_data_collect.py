@@ -27,17 +27,14 @@ argparser.add_argument(
 )
 
 
-def spotify_api_init():
-    # Replace with your own Client ID and Client Secret
-    CLIENT_ID = "ae73429356644539bd05e79773e6a069"
-    CLIENT_SECRET = "f65bd31e1a664a2ab8e71ed3232119a5"
+def spotify_api_init(client_id: str, client_secret: str, redirect_uri: str, scope: str):
 
     # OAuth 2.0 인증 사용
     auth_manager = spotipy.oauth2.SpotifyOAuth(
-        client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
-        redirect_uri="http://localhost:8080",
-        scope="playlist-read-private user-library-read user-read-private playlist-modify-public playlist-modify-private",
+        client_id=client_id,
+        client_secret=client_secret,
+        redirect_uri=redirect_uri,
+        scope=scope,
     )
 
     sp = spotipy.Spotify(auth_manager=auth_manager)
@@ -121,8 +118,8 @@ def save_df(df: pd.DataFrame, save_path: str):
     df.to_csv(save_path, index=False)
 
 
-def main(data_preprocess: DataPreprocess, save_path: str, df_playlist: pd.DataFrame):
-    sp = spotify_api_init()
+def main(args: Namespace):
+    sp = spotify_api_init(args.client_id, args.client_secret, args.redirect_uri, args.scope)
 
     # 곡 데이터 수집
     all_songs_data = collect_songs_data(df_playlist, sp)
@@ -133,6 +130,5 @@ def main(data_preprocess: DataPreprocess, save_path: str, df_playlist: pd.DataFr
 
 if __name__ == "__main__":
     args = argparser.parse_args()
-    data_preprocess = DataPreprocess()
     save_path = "data2/"
-    main(data_preprocess, save_path, args)
+    main(args)
