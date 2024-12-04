@@ -118,17 +118,17 @@ def save_df(df: pd.DataFrame, save_path: str):
     df.to_csv(save_path, index=False)
 
 
-def main(args: Namespace):
-    sp = spotify_api_init(args.client_id, args.client_secret, args.redirect_uri, args.scope)
+# def main(args: Namespace):
+#     sp = spotify_api_init(args.client_id, args.client_secret, args.redirect_uri, args.scope)
 
-    # 곡 데이터 수집
-    all_songs_data = collect_songs_data(df_playlist, sp)
+#     # 곡 데이터 수집
+#     all_songs_data = collect_songs_data(df_playlist, sp)
 
-    # 결과 저장
-    save_df(all_songs_data, save_path + "song_data.csv")
+#     # 결과 저장
+#     save_df(all_songs_data, save_path + "song_data.csv")
 
 
 if __name__ == "__main__":
     args = argparser.parse_args()
     save_path = "data2/"
-    main(args)
+    # main(args)
