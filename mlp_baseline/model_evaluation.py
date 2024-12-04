@@ -27,26 +27,13 @@ def calculate_metrics(model, test_matrix, train_matrix, valid_matrix, device, k_
             # 이미 본 아이템 가져오기
             train_items = set(train_matrix[user_idx].indices)
             valid_items = set(valid_matrix[user_idx].indices)
-            
             seen_items = train_items.union(valid_items)
 
-            mask_items= np.array([416,1092,368])
-
-            seen_items = train_items.union(mask_items)
-
-            # # 평가에 사용할 아이템 리스트 생성 (negative sampling)
+            # 평가에 사용할 아이템 리스트 생성 (negative sampling)
             negative_items = np.setdiff1d(np.arange(num_items), list(seen_items.union(test_items)))
-            
             sampled_negative_items = np.random.choice(negative_items, size=min(len(negative_items), num_negative), replace=False)
-            # items_to_predict = np.array(list(test_items) + list(sampled_negative_items)
+            items_to_predict = np.array(list(test_items) + list(sampled_negative_items))
 
-            items_to_predict = np.array(list(test_items) + list(negative_items))
-
-             # 평가에 사용할 모든 아이템 리스트 생성 (전체 네거티브)
-
-            # negative_items = np.setdiff1d(np.arange(num_items), list(seen_items))
-            # items_to_predict = np.array(list(test_items) + list(negative_items))
-     
             # 사용자와 아이템 텐서 생성
             user_tensor = torch.full((len(items_to_predict),), user_idx, dtype=torch.long, device=device)
             item_tensor = torch.tensor(items_to_predict, dtype=torch.long, device=device)
@@ -70,7 +57,6 @@ def calculate_metrics(model, test_matrix, train_matrix, valid_matrix, device, k_
 
             for k in k_values:
                 top_k_items = ranked_items[:k]
-                print(top_k_items)
                 num_hits = len(set(top_k_items) & test_items)
                 precision = num_hits / k
                 recall = num_hits / len(test_items)
@@ -97,10 +83,10 @@ def main():
 
     # 모델 로드
     num_users, num_items = train_matrix.shape
-    model = MLPModel(num_users, num_items, dropout=0.3, embedding_dim=128)
+    model = MLPModel(num_users+1, num_items+1)
 
     # checkpoint에서 model_state_dict 추출
-    checkpoint = torch.load("best_model2.pt")
+    checkpoint = torch.load("best_model.pt")
     model.load_state_dict(checkpoint["model_state_dict"])
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -115,8 +101,6 @@ def main():
     print(f"MAP: {metrics['MAP']:.4f}")
     for k in sorted(metrics["Precision"].keys()):
         print(f"Precision@{k}: {metrics['Precision'][k]:.4f}")
-
-    for k in sorted(metrics["Recall"].keys()):
         print(f"Recall@{k}: {metrics['Recall'][k]:.4f}")
 
 if __name__ == "__main__":
