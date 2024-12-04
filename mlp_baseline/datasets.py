@@ -2,11 +2,12 @@ from typing import Tuple
 
 import numpy as np
 import torch
+from scipy.sparse import csr_matrix
 from torch.utils.data import Dataset
 
 
 class MLPDataset(Dataset):
-    def __init__(self, interaction_matrix, num_negatives=4):
+    def __init__(self, interaction_matrix: csr_matrix, num_negatives: int = 4):
         """
         MLP 추천 모델을 위한 데이터셋
 
@@ -32,7 +33,7 @@ class MLPDataset(Dataset):
     def __len__(self):
         return len(self.users)
 
-    def _get_negative_items(self, user_idx, num_samples):
+    def _get_negative_items(self, user_idx: int, num_samples: int) -> np.ndarray:
         """특정 유저에 대한 여러 개의 네거티브 아이템을 샘플링"""
         user_items = set(self.interaction_matrix[user_idx].indices)
         negative_items = set()
@@ -44,18 +45,17 @@ class MLPDataset(Dataset):
 
         return np.array(list(negative_items))
 
-    def __getitem__(self, idx):
-        """한 유저에 대한 모든 데이터를 한번에 반환
-        Returns:
-            tuple: (user_id, positive_items, negative_items)
+    def __getitem__(self, index):
         """
-        user_idx = self.users[idx]
-        positive_items = self.user_positive_items[user_idx]
+        Returns:
+            user_id (int): 유저 ID
+            pos_items (np.ndarray): 해당 유저의 포지티브 아이템 리스트
+            neg_items (np.ndarray): 샘플링된 네거티브 아이템 리스트
+        """
+        user_id = self.users[index]
+        pos_items = self.user_positive_items[user_id]
 
-        if self.num_negatives > 0:  # 학습 모드
-            num_pos = len(positive_items)
-            negative_items = self._get_negative_items(user_idx, num_pos * self.num_negatives)
-        else:  # 평가 모드
-            negative_items = np.array([])
+        # 포지티브 아이템 개수 * num_negatives 만큼 네거티브 샘플링
+        neg_items = self._get_negative_items(user_id, len(pos_items) * self.num_negatives)
 
-        return user_idx, np.array(positive_items), negative_items
+        return user_id, pos_items, neg_items

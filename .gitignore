@@ -4,3 +4,4 @@
 **/*.mtx
 **/*.npy
 **/*.pth
+save_model/*

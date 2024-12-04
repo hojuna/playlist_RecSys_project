@@ -1,13 +1,11 @@
+import os
 import pickle
+from argparse import ArgumentParser, Namespace
 
 import numpy as np
 from scipy.io import mmread, mmwrite
 from sklearn.decomposition import NMF
 from sklearn.metrics import mean_squared_error
-
-from argparse import ArgumentParser, Namespace
-
-import os
 
 argparser = ArgumentParser("train_nmf_model")
 argparser.add_argument("--file-path", type=str, default="data/split_data")

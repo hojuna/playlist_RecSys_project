@@ -14,7 +14,6 @@ from scipy.sparse import csr_matrix
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 from unidecode import unidecode
 
-
 argparser = ArgumentParser("api_data_collect")
 argparser.add_argument("--file-path", type=str, default="data/spotify_dataset.csv")
 argparser.add_argument("--save-path", type=str, default="data")

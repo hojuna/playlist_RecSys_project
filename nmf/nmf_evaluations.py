@@ -1,16 +1,13 @@
+import os
 import pickle
+from argparse import ArgumentParser, Namespace
 
 import numpy as np
 from scipy.io import mmread
 from scipy.linalg import solve
 from scipy.sparse import csr_matrix
-from tqdm import tqdm
 from sklearn.decomposition import NMF
-
-from argparse import ArgumentParser, Namespace
-
-import os
-
+from tqdm import tqdm
 
 argparser = ArgumentParser("nmf_evaluations")
 argparser.add_argument("--model-path", type=str, default="nmf/nmf_models/nmf_model.pkl")

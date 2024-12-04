@@ -1,50 +1,78 @@
 import os
+from argparse import ArgumentParser
+from typing import List, Tuple
+
+import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from datasets import MLPDataset
 from models import MLPModel
 from scipy.io import mmread
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-import numpy as np
 
-def train_model(device, model, train_loader, valid_loader, optimizer, num_epochs, save_path, criterion):
+argparser = ArgumentParser("preprocess_dataset")
+argparser.add_argument("--train-path", type=str, default="data/split_data/train_matrix.mtx")
+argparser.add_argument("--valid-path", type=str, default="data/split_data/valid_matrix.mtx")
+argparser.add_argument("--save-path", type=str, default="mlp_baseline/save_model")
+argparser.add_argument("--num-epochs", type=int, default=10)
+argparser.add_argument("--batch-size", type=int, default=128)
+argparser.add_argument("--num-negatives", type=int, default=4)
+argparser.add_argument("--embedding-dim", type=int, default=32)
+argparser.add_argument("--dropout", type=float, default=0.5)
+argparser.add_argument("--lr", type=float, default=0.001)
+argparser.add_argument("--device", type=str, default="cuda")
+argparser.add_argument("--alpha", type=float, default=1.0)
+
+
+def train_model(
+    device: str,
+    model: nn.Module,
+    train_loader: DataLoader,
+    valid_loader: DataLoader,
+    optimizer: optim.Optimizer,
+    num_epochs: int,
+    save_path: str,
+    alpha: float,
+):
     best_valid_loss = float("inf")
 
     for epoch in range(num_epochs):
         model.train()
         total_loss = 0
 
-        for user_ids, pos_items, neg_items, pos_mask, neg_mask in tqdm(train_loader, desc=f"Epoch {epoch+1}"):
-            user_ids = user_ids.to(device)
-            pos_items = pos_items.to(device)
-            neg_items = neg_items.to(device)
-            pos_mask = pos_mask.to(device)
-            neg_mask = neg_mask.to(device)
+        for user_ids, pos_items, neg_items in tqdm(train_loader, desc=f"Epoch {epoch+1}"):
 
+            user_ids = user_ids.to(device)
             optimizer.zero_grad()
 
-            # Flatten tensors for model input
-            users = user_ids.repeat_interleave(pos_mask.sum(dim=1) + neg_mask.sum(dim=1))
-            items = torch.cat([
-                pos_items[pos_mask],
-                neg_items[neg_mask]
-            ])
+            # Positive items 처리
+            pos_losses = []
+            for i, pos_item_list in enumerate(pos_items):
+                if len(pos_item_list) == 0:
+                    continue
+                user_tensor = user_ids[i].repeat(len(pos_item_list))
+                pos_item_tensor = torch.tensor(pos_item_list).long().to(device)
+                pos_outputs = model(user_tensor, pos_item_tensor).squeeze()
+                pos_losses.append(-torch.log(F.sigmoid(pos_outputs)).mean())
+                print(f"pos_outputs: {pos_outputs}")
 
-            # Labels
-            labels = torch.cat([
-                torch.ones(pos_mask.sum().item(), device=device),
-                torch.zeros(neg_mask.sum().item(), device=device)
-            ])
+            # Negative items 처리
+            neg_losses = []
+            for i, neg_item_list in enumerate(neg_items):
+                if len(neg_item_list) == 0:
+                    continue
+                user_tensor = user_ids[i].repeat(len(neg_item_list))
+                neg_item_tensor = torch.tensor(neg_item_list).long().to(device)
+                neg_outputs = model(user_tensor, neg_item_tensor).squeeze()
+                neg_losses.append(-torch.log(1 - F.sigmoid(neg_outputs)).mean())
 
-            # Forward pass
-            outputs = model(users, items).squeeze()
-
-            # Loss calculation
-            loss = criterion(outputs, labels)
-
-            # Backward pass
+            # Total loss
+            pos_loss = torch.stack(pos_losses).mean() if pos_losses else 0
+            neg_loss = torch.stack(neg_losses).mean() if neg_losses else 0
+            loss = pos_loss + neg_loss * alpha
             loss.backward()
             optimizer.step()
 
@@ -54,7 +82,7 @@ def train_model(device, model, train_loader, valid_loader, optimizer, num_epochs
 
         # Validation phase
         if valid_loader is not None:
-            valid_loss = validate_model(model, valid_loader, device, criterion)
+            valid_loss = validate_model(model, valid_loader, device, alpha)
 
             if valid_loss < best_valid_loss:
                 best_valid_loss = valid_loss
@@ -68,117 +96,114 @@ def train_model(device, model, train_loader, valid_loader, optimizer, num_epochs
                     os.path.join(save_path, "best_model.pt"),
                 )
 
-            print(
-                f"Epoch {epoch+1}: Train Loss = {avg_train_loss:.4f}, "
-                f"Valid Loss = {valid_loss:.4f}"
-            )
+            print(f"Epoch {epoch+1}: Train Loss = {avg_train_loss:.4f}, Valid Loss = {valid_loss:.4f}")
 
 
-def validate_model(model, valid_loader, device, criterion):
+def validate_model(model: nn.Module, valid_loader: DataLoader, device: str, alpha: float) -> float:
     model.eval()
     total_valid_loss = 0
 
     with torch.no_grad():
-        for user_ids, pos_items, neg_items, pos_mask, neg_mask in valid_loader:
+        for user_ids, pos_items, neg_items in valid_loader:
             user_ids = user_ids.to(device)
-            pos_items = pos_items.to(device)
-            neg_items = neg_items.to(device)
-            pos_mask = pos_mask.to(device)
-            neg_mask = neg_mask.to(device)
 
-            # Flatten tensors for model input
-            users = user_ids.repeat_interleave(pos_mask.sum(dim=1) + neg_mask.sum(dim=1))
-            items = torch.cat([
-                pos_items[pos_mask],
-                neg_items[neg_mask]
-            ])
+            # Positive items 처리
+            pos_losses = []
+            for i, pos_item_list in enumerate(pos_items):
+                if len(pos_item_list) == 0:
+                    continue
+                user_tensor = user_ids[i].repeat(len(pos_item_list))
+                pos_item_tensor = torch.tensor(pos_item_list).long().to(device)
+                pos_outputs = model(user_tensor, pos_item_tensor).squeeze()
+                pos_losses.append(-torch.log(F.sigmoid(pos_outputs)).mean())
 
-            # Labels
-            labels = torch.cat([
-                torch.ones(pos_mask.sum().item(), device=device),
-                torch.zeros(neg_mask.sum().item(), device=device)
-            ])
+            # Negative items 처리
+            neg_losses = []
+            for i, neg_item_list in enumerate(neg_items):
+                if len(neg_item_list) == 0:
+                    continue
+                user_tensor = user_ids[i].repeat(len(neg_item_list))
+                neg_item_tensor = torch.tensor(neg_item_list).long().to(device)
+                neg_outputs = model(user_tensor, neg_item_tensor).squeeze()
+                neg_losses.append(-torch.log(1 - F.sigmoid(neg_outputs)).mean())
 
-            # Forward pass
-            outputs = model(users, items).squeeze()
-
-            # Loss calculation
-            loss = criterion(outputs, labels)
-
+            # Total loss
+            pos_loss = torch.stack(pos_losses).mean() if pos_losses else 0
+            neg_loss = torch.stack(neg_losses).mean() if neg_losses else 0
+            loss = pos_loss + neg_loss * alpha
             total_valid_loss += loss.item()
 
     avg_valid_loss = total_valid_loss / len(valid_loader)
     return avg_valid_loss
 
 
-def custom_collate_fn(batch):
-    """
-    서로 다른 길이의 positive/negative items를 처리하는 collate 함수
-    """
-    user_ids = []
-    max_pos_len = max(len(x[1]) for x in batch)
-    max_neg_len = max(len(x[2]) for x in batch)
+def custom_collate_fn(
+    batch: List[Tuple[int, List[int], List[int]]]
+) -> Tuple[torch.Tensor, List[List[int]], List[List[int]]]:
+    # 배치에서 각 컴포넌트를 분리
+    user_ids, pos_items_lists, neg_items_lists = zip(*batch)
 
-    batch_size = len(batch)
+    # user_ids만 텐서로 변환하고 나머지는 리스트 형태로 유지
+    user_ids = torch.tensor(list(user_ids)).long()
 
-    # User IDs 텐서
-    user_ids = torch.tensor([x[0] for x in batch], dtype=torch.long)
+    return user_ids, list(pos_items_lists), list(neg_items_lists)
 
-    # Positive items 텐서 및 마스크 생성
-    pos_items = torch.full((batch_size, max_pos_len), -1, dtype=torch.long)  # -1로 패딩
-    pos_mask = torch.zeros((batch_size, max_pos_len), dtype=torch.bool)
-    for i, (_, pos, _) in enumerate(batch):
-        pos_items[i, :len(pos)] = torch.tensor(pos, dtype=torch.long)
-        pos_mask[i, :len(pos)] = 1
-
-    # Negative items 텐서 및 마스크 생성
-    neg_items = torch.full((batch_size, max_neg_len), -1, dtype=torch.long)  # -1로 패딩
-    neg_mask = torch.zeros((batch_size, max_neg_len), dtype=torch.bool)
-    for i, (_, _, neg) in enumerate(batch):
-        neg_items[i, :len(neg)] = torch.tensor(neg, dtype=torch.long)
-        neg_mask[i, :len(neg)] = 1
-
-    return user_ids, pos_items, neg_items, pos_mask, neg_mask
 
 def main():
-    data_dir = "/home/comoz/main_project/playlist_project/data/split_data"
-    train_matrix = mmread(f"{data_dir}/train_matrix.mtx").tocsr()
-    valid_matrix = mmread(f"{data_dir}/valid_matrix.mtx").tocsr()
+    args = argparser.parse_args()
+    torch.cuda.empty_cache()
 
-    train_dataset = MLPDataset(train_matrix, num_negatives=2)
-    valid_dataset = MLPDataset(valid_matrix, num_negatives=2)
+    # 데이터 로드
+    train_matrix = mmread(args.train_path).tocsr()
+    valid_matrix = mmread(args.valid_path).tocsr()
 
+    # 데이터셋 생성
+    train_dataset = MLPDataset(train_matrix, num_negatives=args.num_negatives)
+    valid_dataset = MLPDataset(valid_matrix, num_negatives=args.num_negatives)
+
+    # 데이터로더 설정
     train_loader = DataLoader(
         train_dataset,
-        batch_size=1024,
+        batch_size=args.batch_size,
         shuffle=True,
         num_workers=4,
         pin_memory=True,
-        collate_fn=custom_collate_fn
+        collate_fn=custom_collate_fn,
     )
 
     valid_loader = DataLoader(
         valid_dataset,
-        batch_size=1024,
+        batch_size=args.batch_size,
         shuffle=False,
         num_workers=4,
         pin_memory=True,
-        collate_fn=custom_collate_fn
+        collate_fn=custom_collate_fn,
     )
 
+    # 모델 설정
     num_users, num_items = train_matrix.shape
-    model = MLPModel(num_users + 1, num_items + 1, dropout=0.3)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = MLPModel(num_users, num_items, embedding_dim=args.embedding_dim, dropout=args.dropout)
+    device = torch.device(args.device if torch.cuda.is_available() else "cpu")
     model = model.to(device)
-    criterion = nn.BCEWithLogitsLoss()
 
+    # 옵티마이저 설정
     optimizer = torch.optim.AdamW(
         model.parameters(),
-        lr=0.001,
-        weight_decay=1e-6,
+        lr=args.lr,
     )
 
-    train_model(device, model, train_loader, valid_loader, optimizer, num_epochs=10, save_path=".", criterion=criterion)
+    # 모델 학습
+    train_model(
+        device=device,
+        model=model,
+        train_loader=train_loader,
+        valid_loader=valid_loader,
+        optimizer=optimizer,
+        num_epochs=args.num_epochs,
+        save_path=args.save_path,
+        alpha=args.alpha,
+    )
+
 
 if __name__ == "__main__":
     main()

@@ -1,17 +1,17 @@
+import os
+import time
+from argparse import ArgumentParser, Namespace
+
+import numpy as np
 import pandas as pd
 from scipy.io import mmwrite
 from scipy.sparse import csr_matrix
-
-from argparse import ArgumentParser, Namespace
-import os
-import time
-import numpy as np
-
 
 argparser = ArgumentParser("preprocess_dataset")
 argparser.add_argument("--file-path", type=str, default="data/spotify_dataset.csv")
 argparser.add_argument("--min-song-frequency", type=int, default=50)
 argparser.add_argument("--min-songs-per-user", type=int, default=50)
+argparser.add_argument("--max-song-frequency", type=int, default=1000)
 argparser.add_argument("--save-path", type=str, default="data")
 
 
@@ -33,14 +33,14 @@ def remove_missing_values(df_playlist: pd.DataFrame) -> pd.DataFrame:
     return df_playlist
 
 
-def filter_songs_by_frequency(df_playlist: pd.DataFrame, min_frequency: int) -> pd.DataFrame:
+def filter_songs_by_frequency(df_playlist: pd.DataFrame, min_frequency: int, max_frequency: int) -> pd.DataFrame:
     # ------------------ 노래 빈도 기반 필터링 시작 ------------------
 
     # 각 노래의 등장 빈도 계산
     song_frequency = df_playlist["song_id"].value_counts()
 
     # 빈도 기준으로 노래 필터링 (예: 10회 이상 등장한 노래만 남기기)
-    valid_songs = song_frequency[song_frequency >= min_frequency].index
+    valid_songs = song_frequency[(song_frequency >= min_frequency) & (song_frequency <= max_frequency)].index
 
     # 필터링된 노래만 남기기
     df_playlist = df_playlist[df_playlist["song_id"].isin(valid_songs)].reset_index(drop=True)
@@ -168,7 +168,9 @@ def data_load(file_path: str):
     return df_playlist
 
 
-def filter_users_by_song_count_top(user_song_id_count: pd.DataFrame, song_count_top_threshold: float = 0.99) -> pd.DataFrame:
+def filter_users_by_song_count_top(
+    user_song_id_count: pd.DataFrame, song_count_top_threshold: float = 0.99
+) -> pd.DataFrame:
 
     threshold = user_song_id_count["song_count"].quantile(song_count_top_threshold)
     filtered_users = user_song_id_count[user_song_id_count["song_count"] <= threshold]["user_id"]
@@ -190,13 +192,13 @@ def main(args: Namespace):
 
     state = True
     while True:
-        df_playlist = filter_songs_by_frequency(df_playlist, args.min_song_frequency)
+        df_playlist = filter_songs_by_frequency(df_playlist, args.min_song_frequency, args.max_song_frequency)
         user_song_id_count = calculate_user_song_id_count(df_playlist)
         filtered_users = filter_users_by_song_count(user_song_id_count, args.min_songs_per_user)
         df_playlist = df_playlist[df_playlist["user_id"].isin(filtered_users.values)]
 
         if state:
-            #너무 큰 유저 제거
+            # 너무 큰 유저 제거
             filtered_users = filter_users_by_song_count_top(user_song_id_count)
             df_playlist = df_playlist[df_playlist["user_id"].isin(filtered_users.values)]
 
@@ -238,7 +240,4 @@ def main(args: Namespace):
 if __name__ == "__main__":
     args = argparser.parse_args()
 
-
     main(args)
-
-

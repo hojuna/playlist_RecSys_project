@@ -1,12 +1,10 @@
+import os
+from argparse import ArgumentParser, Namespace
+
 import numpy as np
 from scipy.io import mmread, mmwrite
 from scipy.sparse import csr_matrix, vstack
 from sklearn.model_selection import train_test_split
-
-from argparse import ArgumentParser, Namespace
-
-import os
-
 
 argparser = ArgumentParser("split_data_by_user")
 argparser.add_argument("--file-path", type=str, default="data/playlist_song_matrix_50_50.mtx")
