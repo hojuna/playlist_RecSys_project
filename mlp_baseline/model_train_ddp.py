@@ -65,7 +65,7 @@ def train_model(device, model, train_loader, valid_loader, optimizer, num_epochs
                         "optimizer_state_dict": optimizer.state_dict(),
                         "loss": best_valid_loss,
                     },
-                    os.path.join(save_path, "best_model.pt"),
+                    os.path.join(save_path, "best_model2.pt"),
                 )
 
             print(
@@ -150,7 +150,7 @@ def main():
 
     train_loader = DataLoader(
         train_dataset,
-        batch_size=1024,
+        batch_size=128,
         shuffle=True,
         num_workers=4,
         pin_memory=True,
@@ -159,7 +159,7 @@ def main():
 
     valid_loader = DataLoader(
         valid_dataset,
-        batch_size=1024,
+        batch_size=128,
         shuffle=False,
         num_workers=4,
         pin_memory=True,
@@ -167,7 +167,7 @@ def main():
     )
 
     num_users, num_items = train_matrix.shape
-    model = MLPModel(num_users + 1, num_items + 1, dropout=0.3)
+    model = MLPModel(num_users , num_items , dropout=0.3, embedding_dim=128)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
     criterion = nn.BCEWithLogitsLoss()
