@@ -190,20 +190,11 @@ def main(args: Namespace):
         f"데이터 이상치 제거 기준: 유저당 노래 수 하한 -{args.min_songs_per_user}, 총 노래 등장 횟 수 하한 -{args.min_song_frequency}"
     )
 
-    state = True
     while True:
         df_playlist = filter_songs_by_frequency(df_playlist, args.min_song_frequency, args.max_song_frequency)
         user_song_id_count = calculate_user_song_id_count(df_playlist)
         filtered_users = filter_users_by_song_count(user_song_id_count, args.min_songs_per_user)
         df_playlist = df_playlist[df_playlist["user_id"].isin(filtered_users.values)]
-
-        if state:
-            # 너무 큰 유저 제거
-            filtered_users = filter_users_by_song_count_top(user_song_id_count)
-            df_playlist = df_playlist[df_playlist["user_id"].isin(filtered_users.values)]
-
-            state = False
-
         updated_num_users = df_playlist["user_id"].nunique()
         updated_num_songs = df_playlist["song_id"].nunique()
         total_rows = df_playlist.shape[0]

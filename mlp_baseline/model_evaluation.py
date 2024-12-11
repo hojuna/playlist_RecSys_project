@@ -1,15 +1,19 @@
+from argparse import ArgumentParser
+from datetime import datetime
+from pathlib import Path
+
 import numpy as np
 import torch
-import torch.nn.functional as F
-from models import MLPModel
-from scipy.io import mmread
-from tqdm import tqdm
-from argparse import ArgumentParser
 import torch.nn as nn
+import torch.nn.functional as F
+from scipy.io import mmread
 from scipy.sparse import csr_matrix
+from tqdm import tqdm
+
+from mlp_baseline.deep_models import MLPModel
 
 argparser = ArgumentParser("preprocess_dataset")
-argparser.add_argument("--model-path", type=str, default="mlp_baseline/save_model/best_model.pt")
+argparser.add_argument("--model-path", type=str, default="mlp_baseline/save_model/model2_test.pt")
 argparser.add_argument("--device", type=str, default="cuda")
 
 # 평가 모드
@@ -51,8 +55,7 @@ def calculate_metrics(
             valid_items = set(valid_matrix[user_idx].indices)
             seen_items = train_items.union(valid_items)
 
-            # 평가에 사용할 아이템 리스트 생성 (negative sampling)
-            # 훈련과 검증 데이터에서 본 아이템들은 제외
+            # 평가에 사용할 아이템 리스트 생성
             candidate_items = np.setdiff1d(np.arange(num_items), list(seen_items))
 
             # 테스트 아이템과 랜덤 샘플링된 negative 아이템들을 합쳐서 평가
@@ -65,20 +68,35 @@ def calculate_metrics(
             else:
                 items_to_predict = np.array(list(test_items) + list(sampled_items))
 
-            # 사용자와 아이템 텐서 생성
-            user_tensor = torch.full((len(items_to_predict),), user_idx, dtype=torch.long, device=device)
-            item_tensor = torch.tensor(items_to_predict, dtype=torch.long, device=device)
+            # 배치 처리
+            batch_size = 1024
+            all_scores = []
 
-            # 예측값 계산
-            scores = model(user_tensor, item_tensor).squeeze().cpu().numpy()
+            for i in range(0, len(items_to_predict), batch_size):
+                batch_items = items_to_predict[i : i + batch_size]
+
+                # numpy array로 먼저 변환하여 속도 개선
+                batch_items_array = np.array([batch_items])
+
+                # 모델의 forward 함수 입력 형태에 맞게 수정
+                user_tensor = torch.tensor([[user_idx]], dtype=torch.long, device=device)
+                item_tensor = torch.from_numpy(batch_items_array).to(device=device, dtype=torch.long)
+
+                # 예측값 계산 및 차원 처리
+                batch_scores = model(user_tensor, item_tensor)
+                # 항상 1차원 배열로 변환
+                batch_scores = batch_scores.squeeze().cpu().numpy()
+                if batch_scores.ndim == 0:  # 스칼라인 경우
+                    batch_scores = np.array([batch_scores])
+                all_scores.append(batch_scores)
+
+            # 모든 배치의 점수를 합침
+            scores = np.concatenate(all_scores)
 
             # 아이템과 점수를 정렬
             item_score_dict = dict(zip(items_to_predict, scores))
             ranked_items = sorted(item_score_dict, key=item_score_dict.get, reverse=True)
 
-            for i in ranked_items[:10]:
-                print(f"Item: {i}, Score: {item_score_dict[i]:.4f}", end=" ")
-            print()
             # 평가 지표 계산
             ap = 0.0
             hits = 0
@@ -110,7 +128,6 @@ def calculate_metrics(
 
 def main():
     args = argparser.parse_args()
-    """메인 평가 함수"""
     # 데이터 로드
     data_dir = "/home/comoz/main_project/playlist_project/data/split_data"
     train_matrix = mmread(f"{data_dir}/train_matrix.mtx").tocsr()
@@ -119,27 +136,72 @@ def main():
 
     # 모델 로드
     num_users, num_items = train_matrix.shape
-    model = MLPModel(num_users, num_items)
 
-    # checkpoint에서 model_state_dict 추출
-    checkpoint = torch.load(args.model_path)
-    model.load_state_dict(checkpoint["model_state_dict"])
+    # save_model 디렉토리 내의 모든 .pt 파일 순회
+    model_dir = Path("mlp_baseline/save_model")
+    result_dir = Path("mlp_baseline/evaluation_results")
+    result_dir.mkdir(parents=True, exist_ok=True)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = model.to(device)
-    model.eval()
+    # 결과 파일명 생성 (현재 시간 포함)
+    current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    result_file = result_dir / f"evaluation_results_{current_time}.txt"
 
-    # 평가 실행
-    metrics = calculate_metrics(
-        model, test_matrix, train_matrix, valid_matrix, device, num_negative=args.num_negative, eval_mode=args.eval_mode
-    )
+    # 평가 설정 정보 저장
+    with open(result_file, "w", encoding="utf-8") as f:
+        f.write(f"Evaluation Results - {current_time}\n")
+        f.write(f"Evaluation Mode: {args.eval_mode}\n")
+        f.write(f"Number of Negative Samples: {args.num_negative}\n")
+        f.write("-" * 50 + "\n\n")
 
-    # 결과 출력
-    print("\nEvaluation Results:")
-    print(f"MAP: {metrics['MAP']:.4f}")
-    for k in sorted(metrics["Precision"].keys()):
-        print(f"Precision@{k}: {metrics['Precision'][k]:.4f}")
-        print(f"Recall@{k}: {metrics['Recall'][k]:.4f}")
+    def _eval():
+        model = MLPModel(num_users, num_items)
+
+        # checkpoint에서 model_state_dict 추출
+        checkpoint = torch.load(args.model_path, weights_only=True)
+        model.load_state_dict(checkpoint["model_state_dict"])
+
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model = model.to(device)
+        model.eval()
+
+        # 평가 실행
+        metrics = calculate_metrics(
+            model,
+            test_matrix,
+            train_matrix,
+            valid_matrix,
+            device,
+            num_negative=args.num_negative,
+            eval_mode=args.eval_mode,
+        )
+
+        # 결과를 파일과 콘솔에 동시에 출력
+        result_text = f"\nModel: {args.model_path}\n"
+        result_text += f"MAP: {metrics['MAP']:.4f}\n"
+
+        for k in sorted(metrics["Precision"].keys()):
+            result_text += f"Precision@{k}: {metrics['Precision'][k]:.4f}\n"
+
+        for k in sorted(metrics["Recall"].keys()):
+            result_text += f"Recall@{k}: {metrics['Recall'][k]:.4f}\n"
+
+        result_text += "-" * 50 + "\n"
+
+        # 콘솔 출력
+        print(result_text)
+
+        # 파일 저장
+        with open(result_file, "a", encoding="utf-8") as f:
+            f.write(result_text)
+            f.flush()
+
+    # 모든 모델 평가
+    for model_path in sorted(model_dir.glob("*.pt")):
+        print(f"\nEvaluating model: {model_path}")
+        args.model_path = str(model_path)
+        _eval()
+
+    print(f"\nResults have been saved to: {result_file}")
 
 
 if __name__ == "__main__":

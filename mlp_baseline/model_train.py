@@ -1,30 +1,56 @@
 import os
-from argparse import ArgumentParser
-from typing import List, Tuple
+import random
+from argparse import ArgumentParser, Namespace
+from typing import Tuple
 
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 from datasets import MLPDataset
-from models import MLPModel
+from models2 import MLPModel
 from scipy.io import mmread
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+# fmt: off
 argparser = ArgumentParser("preprocess_dataset")
-argparser.add_argument("--train-path", type=str, default="data/split_data/train_matrix.mtx")
-argparser.add_argument("--valid-path", type=str, default="data/split_data/valid_matrix.mtx")
-argparser.add_argument("--save-path", type=str, default="mlp_baseline/save_model")
-argparser.add_argument("--num-epochs", type=int, default=10)
-argparser.add_argument("--batch-size", type=int, default=128)
-argparser.add_argument("--num-negatives", type=int, default=4)
-argparser.add_argument("--embedding-dim", type=int, default=32)
-argparser.add_argument("--dropout", type=float, default=0.5)
-argparser.add_argument("--lr", type=float, default=0.001)
-argparser.add_argument("--device", type=str, default="cuda")
-argparser.add_argument("--alpha", type=float, default=1.0)
+argparser.add_argument("--train-path", type=str, default="/home/comoz/main_project/playlist_project/data/split_data/train_matrix.mtx")
+argparser.add_argument("--valid-path", type=str, default="/home/comoz/main_project/playlist_project/data/split_data/valid_matrix.mtx")
+argparser.add_argument("--save-path", type=str, default="/home/comoz/main_project/playlist_project/mlp_baseline/save_model")
+argparser.add_argument("--train-negative-path", type=str, default="/home/comoz/main_project/playlist_project/data/negative_sample/default/train_default_5_epochs_4_negatives.mtx")
+argparser.add_argument("--valid-negative-path", type=str, default="/home/comoz/main_project/playlist_project/data/negative_sample/default/valid_default_5_epochs_4_negatives.mtx")
+argparser.add_argument("--negative-mode", type=str, default="default")
+argparser.add_argument("--num-epochs", type=int, default=5)
+argparser.add_argument("--train-batch-size", type=int, default=1024)
+argparser.add_argument("--valid-batch-size", type=int, default=4096)
+argparser.add_argument("--num-negatives", type=int, default=4)  # 4, 8, 16
+argparser.add_argument("--model-dim", type=int, default=128)
+argparser.add_argument("--dropout", type=float, default=0.5)    
+argparser.add_argument("--lr", type=float, default=1e-4)  # 1e-4, 1e-3, 5e-3, 1e-2, 1e-1
+argparser.add_argument("--weight-decay", type=float, default=1e-4)
+argparser.add_argument("--log-interval", type=int, default=50)
+argparser.add_argument("--valid-interval", type=int, default=200)
+argparser.add_argument("--num-workers", type=int, default=8)
+argparser.add_argument("--prefetch-factor", type=int, default=4)
+argparser.add_argument("--seed", type=int, default=42)
+# fmt: on
+
+
+result_file = f"mlp_baseline/training_results/training_log.txt"
+os.makedirs(os.path.dirname(result_file), exist_ok=True)
+
+
+def save_log(*args, **kwargs):
+    with open(result_file, "a", encoding="utf-8") as f:
+        print(*args, **kwargs, file=f)
+
+
+def set_seed(seed: int):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
 
 
 def train_model(
@@ -33,177 +59,232 @@ def train_model(
     train_loader: DataLoader,
     valid_loader: DataLoader,
     optimizer: optim.Optimizer,
+    scheduler: optim.lr_scheduler._LRScheduler,
     num_epochs: int,
     save_path: str,
-    alpha: float,
+    args: Namespace,
 ):
+    model.train()
+
+    criterion = nn.BCEWithLogitsLoss(reduction="none")
     best_valid_loss = float("inf")
 
+    step = 0
+    avg_train_loss = torch.tensor(0.0, device=device)
+    state = True
     for epoch in range(num_epochs):
-        model.train()
-        total_loss = 0
-
-        for user_ids, pos_items, neg_items in tqdm(train_loader, desc=f"Epoch {epoch+1}"):
-
+        for user_ids, positive_ids, negative_ids in train_loader:
             user_ids = user_ids.to(device)
-            optimizer.zero_grad()
+            positive_ids = positive_ids.to(device)
+            negative_ids = negative_ids.to(device)
+            if state:
+                print(user_ids[0], positive_ids[0], negative_ids[0])
+                state = False
 
-            # Positive items 처리
-            pos_losses = []
-            for i, pos_item_list in enumerate(pos_items):
-                if len(pos_item_list) == 0:
-                    continue
-                user_tensor = user_ids[i].repeat(len(pos_item_list))
-                pos_item_tensor = torch.tensor(pos_item_list).long().to(device)
-                pos_outputs = model(user_tensor, pos_item_tensor).squeeze()
-                pos_losses.append(-torch.log(F.sigmoid(pos_outputs)).mean())
-                print(f"pos_outputs: {pos_outputs}")
+            total_ids = torch.cat([positive_ids, negative_ids], dim=1)
+            # mixed precision training
 
-            # Negative items 처리
-            neg_losses = []
-            for i, neg_item_list in enumerate(neg_items):
-                if len(neg_item_list) == 0:
-                    continue
-                user_tensor = user_ids[i].repeat(len(neg_item_list))
-                neg_item_tensor = torch.tensor(neg_item_list).long().to(device)
-                neg_outputs = model(user_tensor, neg_item_tensor).squeeze()
-                neg_losses.append(-torch.log(1 - F.sigmoid(neg_outputs)).mean())
+            with torch.amp.autocast(device_type="cuda", dtype=torch.bfloat16):
+                outputs = model(user_ids, total_ids).squeeze()  # (batch_size, num_items)
 
-            # Total loss
-            pos_loss = torch.stack(pos_losses).mean() if pos_losses else 0
-            neg_loss = torch.stack(neg_losses).mean() if neg_losses else 0
-            loss = pos_loss + neg_loss * alpha
+                positive_labels = torch.ones_like(positive_ids, device=device, dtype=torch.float)
+                negative_labels = torch.zeros_like(negative_ids, device=device, dtype=torch.float)
+                positive_loss = criterion(outputs[:, : positive_ids.size(1)], positive_labels)
+                negative_loss = criterion(outputs[:, positive_ids.size(1) :], negative_labels)
+                loss = (positive_loss.mean(axis=1) + negative_loss.mean(axis=1)) / 2
+                loss = loss.mean()
+
             loss.backward()
             optimizer.step()
+            optimizer.zero_grad()
+            scheduler.step()
+            step += 1
 
-            total_loss += loss.item()
+            avg_train_loss += loss.detach()
 
-        avg_train_loss = total_loss / len(train_loader)
+            if step % args.log_interval == 0:
+                avg_train_loss = avg_train_loss / args.log_interval
+                learning_rate = optimizer.param_groups[0]["lr"]
+                print(f"Step {step}: Train Loss = {avg_train_loss:.4f}, Learning Rate = {learning_rate:.4f}")
+                avg_train_loss = torch.tensor(0.0, device=device)
 
-        # Validation phase
-        if valid_loader is not None:
-            valid_loss = validate_model(model, valid_loader, device, alpha)
+            if step % args.valid_interval == 0:
 
-            if valid_loss < best_valid_loss:
-                best_valid_loss = valid_loss
-                torch.save(
-                    {
-                        "epoch": epoch,
-                        "model_state_dict": model.state_dict(),
-                        "optimizer_state_dict": optimizer.state_dict(),
-                        "loss": best_valid_loss,
-                    },
-                    os.path.join(save_path, "best_model.pt"),
+                # Validation phase
+                model.eval()
+                valid_loss, valid_positive_accuracy, valid_negative_accuracy = validate_model(
+                    model, valid_loader, device
+                )
+                model.train()
+
+                if valid_loss < best_valid_loss:
+                    best_valid_loss = valid_loss
+                    torch.save(
+                        {
+                            "epoch": epoch,
+                            "model_state_dict": model.state_dict(),
+                            "optimizer_state_dict": optimizer.state_dict(),
+                            "loss": best_valid_loss,
+                        },
+                        # os.path.join(save_path, f"model_{args.negative_mode}_{args.num_negatives}_{args.lr}_lr.pt"),
+                        os.path.join(save_path, "model2_test.pt"),
+                    )
+
+                print(
+                    f"Step {step}: Valid Loss = {valid_loss:.4f}, ",
+                    f"Valid Positive Accuracy = {valid_positive_accuracy:.4f}, ",
+                    f"Valid Negative Accuracy = {valid_negative_accuracy:.4f}",
                 )
 
-            print(f"Epoch {epoch+1}: Train Loss = {avg_train_loss:.4f}, Valid Loss = {valid_loss:.4f}")
+    # 모든 에포크 반복문이 끝난 후 최종 학습 결과 저장
+    final_valid_loss, final_positive_accuracy, final_negative_accuracy = validate_model(model, valid_loader, device)
+
+    # 최종 학습 결과를 로그 파일로 저장
+    save_log(f"Final Training Results")
+    save_log("-" * 50)
+    save_log(f"Model Configuration:")
+    save_log(f"Total Epochs: {args.num_epochs}")
+    save_log(f"Learning Rate: {args.lr}")
+    save_log(f"Number of Negatives: {args.num_negatives}")
+    save_log(f"Negative Sampling Mode: {args.negative_mode}")
+    save_log("-" * 50)
+    save_log("")
+    save_log("Final Validation Results:")
+    save_log(f"Valid Loss: {final_valid_loss:.4f}")
+    save_log(f"Valid Positive Accuracy: {final_positive_accuracy:.4f}")
+    save_log(f"Valid Negative Accuracy: {final_negative_accuracy:.4f}")
+    save_log(f"Best Valid Loss: {best_valid_loss:.4f}")
+    save_log("-" * 50)
 
 
-def validate_model(model: nn.Module, valid_loader: DataLoader, device: str, alpha: float) -> float:
+def validate_model(model: nn.Module, valid_loader: DataLoader, device: str) -> Tuple[float, float, float]:
     model.eval()
-    total_valid_loss = 0
+
+    avg_positive_accuracy = torch.tensor(0.0, device=device)
+    avg_negative_accuracy = torch.tensor(0.0, device=device)
+    total_valid_loss = torch.tensor(0.0, device=device)
+
+    criterion = nn.BCEWithLogitsLoss(reduction="none")
 
     with torch.no_grad():
-        for user_ids, pos_items, neg_items in valid_loader:
+        for user_ids, positive_ids, negative_ids in valid_loader:
             user_ids = user_ids.to(device)
+            positive_ids = positive_ids.to(device)
+            negative_ids = negative_ids.to(device)
 
-            # Positive items 처리
-            pos_losses = []
-            for i, pos_item_list in enumerate(pos_items):
-                if len(pos_item_list) == 0:
-                    continue
-                user_tensor = user_ids[i].repeat(len(pos_item_list))
-                pos_item_tensor = torch.tensor(pos_item_list).long().to(device)
-                pos_outputs = model(user_tensor, pos_item_tensor).squeeze()
-                pos_losses.append(-torch.log(F.sigmoid(pos_outputs)).mean())
+            positive_labels = torch.ones_like(positive_ids, device=device, dtype=torch.float)
+            negative_labels = torch.zeros_like(negative_ids, device=device, dtype=torch.float)
 
-            # Negative items 처리
-            neg_losses = []
-            for i, neg_item_list in enumerate(neg_items):
-                if len(neg_item_list) == 0:
-                    continue
-                user_tensor = user_ids[i].repeat(len(neg_item_list))
-                neg_item_tensor = torch.tensor(neg_item_list).long().to(device)
-                neg_outputs = model(user_tensor, neg_item_tensor).squeeze()
-                neg_losses.append(-torch.log(1 - F.sigmoid(neg_outputs)).mean())
+            total_ids = torch.cat([positive_ids, negative_ids], dim=1)
 
-            # Total loss
-            pos_loss = torch.stack(pos_losses).mean() if pos_losses else 0
-            neg_loss = torch.stack(neg_losses).mean() if neg_losses else 0
-            loss = pos_loss + neg_loss * alpha
-            total_valid_loss += loss.item()
+            with torch.amp.autocast(device_type="cuda", dtype=torch.bfloat16):
+                outputs = model(user_ids, total_ids).squeeze()
 
-    avg_valid_loss = total_valid_loss / len(valid_loader)
-    return avg_valid_loss
+            pos_outputs = outputs[:, : positive_ids.size(1)]
+            neg_outputs = outputs[:, positive_ids.size(1) :]
 
+            pos_loss = criterion(pos_outputs, positive_labels).mean(axis=1)
+            neg_loss = criterion(neg_outputs, negative_labels).mean(axis=1)
 
-def custom_collate_fn(
-    batch: List[Tuple[int, List[int], List[int]]]
-) -> Tuple[torch.Tensor, List[List[int]], List[List[int]]]:
-    # 배치에서 각 컴포넌트를 분리
-    user_ids, pos_items_lists, neg_items_lists = zip(*batch)
+            pos_accuracy = (pos_outputs > 0).float().sum() / positive_ids.size(1)
+            neg_accuracy = (neg_outputs < 0).float().sum() / negative_ids.size(1)
 
-    # user_ids만 텐서로 변환하고 나머지는 리스트 형태로 유지
-    user_ids = torch.tensor(list(user_ids)).long()
+            avg_positive_accuracy += pos_accuracy
+            avg_negative_accuracy += neg_accuracy
 
-    return user_ids, list(pos_items_lists), list(neg_items_lists)
+            loss = (pos_loss + neg_loss) / 2
+            total_valid_loss += loss.sum()
+    avg_valid_loss = total_valid_loss.item() / len(valid_loader.dataset)
+    avg_positive_accuracy = avg_positive_accuracy.item() / len(valid_loader.dataset)
+    avg_negative_accuracy = avg_negative_accuracy.item() / len(valid_loader.dataset)
+
+    return avg_valid_loss, avg_positive_accuracy, avg_negative_accuracy
 
 
 def main():
     args = argparser.parse_args()
     torch.cuda.empty_cache()
 
+    set_seed(args.seed)
+
     # 데이터 로드
     train_matrix = mmread(args.train_path).tocsr()
     valid_matrix = mmread(args.valid_path).tocsr()
 
-    # 데이터셋 생성
-    train_dataset = MLPDataset(train_matrix, num_negatives=args.num_negatives)
-    valid_dataset = MLPDataset(valid_matrix, num_negatives=args.num_negatives)
+    def _train():
+        train_negative_matrix = mmread(args.train_negative_path).tocsr()
+        valid_negative_matrix = mmread(args.valid_negative_path).tocsr()
 
-    # 데이터로더 설정
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=args.batch_size,
-        shuffle=True,
-        num_workers=4,
-        pin_memory=True,
-        collate_fn=custom_collate_fn,
-    )
+        # 데이터셋 생성
+        train_dataset = MLPDataset(train_matrix, train_negative_matrix, num_negatives=args.num_negatives)
+        valid_dataset = MLPDataset(valid_matrix, valid_negative_matrix, num_negatives=args.num_negatives)
 
-    valid_loader = DataLoader(
-        valid_dataset,
-        batch_size=args.batch_size,
-        shuffle=False,
-        num_workers=4,
-        pin_memory=True,
-        collate_fn=custom_collate_fn,
-    )
+        print(f"Train dataset size: {len(train_dataset)}")
+        print(f"Valid dataset size: {len(valid_dataset)}")
 
-    # 모델 설정
-    num_users, num_items = train_matrix.shape
-    model = MLPModel(num_users, num_items, embedding_dim=args.embedding_dim, dropout=args.dropout)
-    device = torch.device(args.device if torch.cuda.is_available() else "cpu")
-    model = model.to(device)
+        # 데이터로더 설정
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=args.train_batch_size,
+            shuffle=True,
+            num_workers=args.num_workers,
+            pin_memory=True,
+            prefetch_factor=args.prefetch_factor,
+        )
 
-    # 옵티마이저 설정
-    optimizer = torch.optim.AdamW(
-        model.parameters(),
-        lr=args.lr,
-    )
+        valid_loader = DataLoader(
+            valid_dataset,
+            batch_size=args.valid_batch_size,
+            shuffle=False,
+            num_workers=args.num_workers,
+            pin_memory=True,
+            prefetch_factor=args.prefetch_factor,
+        )
 
-    # 모델 학습
-    train_model(
-        device=device,
-        model=model,
-        train_loader=train_loader,
-        valid_loader=valid_loader,
-        optimizer=optimizer,
-        num_epochs=args.num_epochs,
-        save_path=args.save_path,
-        alpha=args.alpha,
-    )
+        # 모델 설정
+        num_users, num_items = train_matrix.shape
+        model = MLPModel(num_users, num_items, model_dim=args.model_dim, dropout=args.dropout)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model = model.to(device)
+
+        # 옵티마이저 설정
+        optimizer = torch.optim.AdamW(
+            model.parameters(),
+            lr=args.lr,
+            weight_decay=args.weight_decay,
+        )
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.num_epochs * len(train_loader))
+
+        # 모델 학습
+        train_model(
+            device=device,
+            model=model,
+            train_loader=train_loader,
+            valid_loader=valid_loader,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            num_epochs=args.num_epochs,
+            save_path=args.save_path,
+            args=args,
+        )
+
+    lr_list = [1e-4, 1e-3, 5e-3, 1e-2, 1e-1]
+    num_negatives_list = [4, 8, 16]
+    negative_mode_list = ["default", "raw"]
+    _train()
+
+    # for lr in lr_list:
+    #     for num_negatives in num_negatives_list:
+    #         for negative_mode in negative_mode_list:
+    #             args.lr = lr
+    #             args.num_negatives = num_negatives
+    #             args.negative_mode = negative_mode
+    #             args.train_negative_path = f"/home/comoz/main_project/playlist_project/data/negative_sample/{args.negative_mode}/train_{args.negative_mode}_5_epochs_{args.num_negatives}_negatives.mtx"
+    #             args.valid_negative_path = f"/home/comoz/main_project/playlist_project/data/negative_sample/{args.negative_mode}/valid_{args.negative_mode}_5_epochs_{args.num_negatives}_negatives.mtx"
+
+    #             _train()
 
 
 if __name__ == "__main__":
+
     main()

@@ -1,4 +1,6 @@
-from typing import Tuple
+import random
+from collections import defaultdict
+from typing import List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -7,7 +9,12 @@ from torch.utils.data import Dataset
 
 
 class MLPDataset(Dataset):
-    def __init__(self, interaction_matrix: csr_matrix, num_negatives: int = 4):
+    def __init__(
+        self,
+        interaction_matrix: csr_matrix,
+        negative_matrix: csr_matrix,
+        num_negatives: int = 4,
+    ):
         """
         MLP 추천 모델을 위한 데이터셋
 
@@ -18,44 +25,42 @@ class MLPDataset(Dataset):
         # 행렬 정보 저장
         self.num_users, self.num_items = interaction_matrix.shape
         self.num_negatives = num_negatives
-        self.interaction_matrix = interaction_matrix
+
+        self.song_ids = set(range(self.num_items))
 
         # 유저별 포지티브 아이템 리스트 생성
-        self.user_positive_items = {}
+        self.data = []
+        self.items_per_user = defaultdict(list)
         for user_idx in range(self.num_users):
-            positive_items = interaction_matrix[user_idx].indices
-            if len(positive_items) > 0:  # 포지티브 아이템이 있는 유저만 포함
-                self.user_positive_items[user_idx] = positive_items
+            for item_idx in interaction_matrix[user_idx].indices:
+                self.data.append((user_idx, item_idx))
+                self.items_per_user[user_idx].append(item_idx)
+        self.num_data = len(self.data)
 
-        # 학습에 사용할 유저 리스트 (포지티브 아이템이 있는 유저만)
-        self.users = list(self.user_positive_items.keys())
+        self.negative_matrix = negative_matrix
 
     def __len__(self):
-        return len(self.users)
+        return self.num_data
 
     def _get_negative_items(self, user_idx: int, num_samples: int) -> np.ndarray:
-        """특정 유저에 대한 여러 개의 네거티브 아이템을 샘플링"""
-        user_items = set(self.interaction_matrix[user_idx].indices)
-        negative_items = set()
+        """저장된 네거티브 매트릭스에서 가져오기"""
+        negative_items = self.negative_matrix[user_idx].indices[:num_samples]
+        return negative_items
 
-        while len(negative_items) < num_samples:
-            item_idx = np.random.randint(0, self.num_items)
-            if item_idx not in user_items:
-                negative_items.add(item_idx)
-
-        return np.array(list(negative_items))
-
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Returns:
             user_id (int): 유저 ID
             pos_items (np.ndarray): 해당 유저의 포지티브 아이템 리스트
             neg_items (np.ndarray): 샘플링된 네거티브 아이템 리스트
         """
-        user_id = self.users[index]
-        pos_items = self.user_positive_items[user_id]
+        user_id, positive_ids = self.data[index]
 
         # 포지티브 아이템 개수 * num_negatives 만큼 네거티브 샘플링
-        neg_items = self._get_negative_items(user_id, len(pos_items) * self.num_negatives)
+        negative_ids = self._get_negative_items(user_id, self.num_negatives)
 
-        return user_id, pos_items, neg_items
+        user_id = torch.tensor([user_id], dtype=torch.long)
+        positive_ids = torch.tensor([positive_ids], dtype=torch.long)
+        negative_ids = torch.tensor(negative_ids, dtype=torch.long)
+
+        return user_id, positive_ids, negative_ids

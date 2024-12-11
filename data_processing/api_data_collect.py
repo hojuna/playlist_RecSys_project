@@ -8,7 +8,6 @@ import pandas as pd
 import requests
 import spotipy
 from fuzzywuzzy import fuzz
-from preprocess_dataset import DataPreprocess
 from scipy.io import mmwrite
 from scipy.sparse import csr_matrix
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
@@ -27,17 +26,17 @@ argparser.add_argument(
 )
 
 
-def spotify_api_init(client_id: str, client_secret: str, redirect_uri: str, scope: str):
+def spotify_api_init(client_id: str, client_secret: str, redirect_uri: str, scope: str, access_token: str):
 
     # OAuth 2.0 인증 사용
-    auth_manager = spotipy.oauth2.SpotifyOAuth(
-        client_id=client_id,
-        client_secret=client_secret,
-        redirect_uri=redirect_uri,
-        scope=scope,
-    )
+    # auth_manager = spotipy.oauth2.SpotifyOAuth(
+    #     client_id=client_id,
+    #     client_secret=client_secret,
+    #     redirect_uri=redirect_uri,
+    #     scope=scope,
+    # )
 
-    sp = spotipy.Spotify(auth_manager=auth_manager)
+    sp = spotipy.Spotify(auth=access_token)
     return sp
 
 
@@ -118,17 +117,54 @@ def save_df(df: pd.DataFrame, save_path: str):
     df.to_csv(save_path, index=False)
 
 
-# def main(args: Namespace):
-#     sp = spotify_api_init(args.client_id, args.client_secret, args.redirect_uri, args.scope)
+def main(args: Namespace, access_token: str):
+    sp = spotify_api_init(args.client_id, args.client_secret, args.redirect_uri, args.scope, access_token)
 
-#     # 곡 데이터 수집
-#     all_songs_data = collect_songs_data(df_playlist, sp)
+    # CSV 파일 읽기 (잘못된 줄은 건너뜀)
+    df_playlist = pd.read_csv(args.file_path, skipinitialspace=True, on_bad_lines="skip")  # 잘못된 줄을 건너뜀
 
-#     # 결과 저장
-#     save_df(all_songs_data, save_path + "song_data.csv")
+    # 곡 데이터 수집
+    all_songs_data = collect_songs_data(df_playlist, sp)
+
+    # 결과 저장
+    save_df(all_songs_data, save_path + "song_data.csv")
+
+
+def test(args: Namespace):
+    import base64
+
+    import requests
+
+    # Replace with your own Client ID and Client Secret
+    CLIENT_ID = args.client_id
+    CLIENT_SECRET = args.client_secret
+
+    # Base64 encode the client ID and client secret
+    client_credentials = f"{CLIENT_ID}:{CLIENT_SECRET}"
+    client_credentials_base64 = base64.b64encode(client_credentials.encode())
+
+    # Request the access token
+    token_url = "https://accounts.spotify.com/api/token"
+    headers = {"Authorization": f"Basic {client_credentials_base64.decode()}"}
+    data = {
+        "grant_type": "client_credentials",
+    }
+    response = requests.post(token_url, data=data, headers=headers)
+
+    if response.status_code == 200:
+        access_token = response.json()["access_token"]
+        print("Access token obtained successfully.")
+        print(access_token)
+
+        return access_token
+    else:
+        print("Error obtaining access token.")
+        exit()
 
 
 if __name__ == "__main__":
     args = argparser.parse_args()
-    save_path = "data2/"
+    save_path = "data/"
     # main(args)
+    access_token = test(args)
+    main(args, access_token)
