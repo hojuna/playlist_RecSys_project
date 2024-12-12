@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from datasets import MLPDataset
-from models2 import MLPModel
+from models import MLPModel
 from scipy.io import mmread
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -37,14 +37,12 @@ argparser.add_argument("--seed", type=int, default=42)
 # fmt: on
 
 
-result_file = f"mlp_baseline/training_results/training_log.txt"
-os.makedirs(os.path.dirname(result_file), exist_ok=True)
 
 
 def save_log(*args, **kwargs):
-    with open(result_file, "a", encoding="utf-8") as f:
+    result_file = f"mlp_baseline/training_results/training_log.txt"
+    with open(result_file, "a", encoding='utf-8') as f:
         print(*args, **kwargs, file=f)
-
 
 def set_seed(seed: int):
     random.seed(seed)
@@ -71,15 +69,15 @@ def train_model(
 
     step = 0
     avg_train_loss = torch.tensor(0.0, device=device)
-    state = True
+    state=True
     for epoch in range(num_epochs):
         for user_ids, positive_ids, negative_ids in train_loader:
             user_ids = user_ids.to(device)
             positive_ids = positive_ids.to(device)
             negative_ids = negative_ids.to(device)
             if state:
-                print(user_ids[0], positive_ids[0], negative_ids[0])
-                state = False
+                print(user_ids[0],positive_ids[0],negative_ids[0])
+                state=False
 
             total_ids = torch.cat([positive_ids, negative_ids], dim=1)
             # mixed precision training
@@ -126,8 +124,7 @@ def train_model(
                             "optimizer_state_dict": optimizer.state_dict(),
                             "loss": best_valid_loss,
                         },
-                        # os.path.join(save_path, f"model_{args.negative_mode}_{args.num_negatives}_{args.lr}_lr.pt"),
-                        os.path.join(save_path, "model2_test.pt"),
+                        os.path.join(save_path, f"model_{args.negative_mode}_{args.num_negatives}_{args.lr}_lr.pt"),
                     )
 
                 print(
@@ -137,7 +134,9 @@ def train_model(
                 )
 
     # 모든 에포크 반복문이 끝난 후 최종 학습 결과 저장
-    final_valid_loss, final_positive_accuracy, final_negative_accuracy = validate_model(model, valid_loader, device)
+    final_valid_loss, final_positive_accuracy, final_negative_accuracy = validate_model(
+        model, valid_loader, device
+    )
 
     # 최종 학습 결과를 로그 파일로 저장
     save_log(f"Final Training Results")
@@ -155,7 +154,6 @@ def train_model(
     save_log(f"Valid Negative Accuracy: {final_negative_accuracy:.4f}")
     save_log(f"Best Valid Loss: {best_valid_loss:.4f}")
     save_log("-" * 50)
-
 
 def validate_model(model: nn.Module, valid_loader: DataLoader, device: str) -> Tuple[float, float, float]:
     model.eval()
@@ -202,6 +200,11 @@ def validate_model(model: nn.Module, valid_loader: DataLoader, device: str) -> T
 
 
 def main():
+
+    result_file = f"mlp_baseline/training_results/training_log.txt"
+    os.makedirs(os.path.dirname(result_file), exist_ok=True)
+
+
     args = argparser.parse_args()
     torch.cuda.empty_cache()
 
@@ -210,6 +213,8 @@ def main():
     # 데이터 로드
     train_matrix = mmread(args.train_path).tocsr()
     valid_matrix = mmread(args.valid_path).tocsr()
+
+
 
     def _train():
         train_negative_matrix = mmread(args.train_negative_path).tocsr()
@@ -267,22 +272,21 @@ def main():
             save_path=args.save_path,
             args=args,
         )
-
     lr_list = [1e-4, 1e-3, 5e-3, 1e-2, 1e-1]
     num_negatives_list = [4, 8, 16]
-    negative_mode_list = ["default", "raw"]
+    negative_mode_list = ["default"]
     _train()
 
-    # for lr in lr_list:
-    #     for num_negatives in num_negatives_list:
-    #         for negative_mode in negative_mode_list:
-    #             args.lr = lr
-    #             args.num_negatives = num_negatives
-    #             args.negative_mode = negative_mode
-    #             args.train_negative_path = f"/home/comoz/main_project/playlist_project/data/negative_sample/{args.negative_mode}/train_{args.negative_mode}_5_epochs_{args.num_negatives}_negatives.mtx"
-    #             args.valid_negative_path = f"/home/comoz/main_project/playlist_project/data/negative_sample/{args.negative_mode}/valid_{args.negative_mode}_5_epochs_{args.num_negatives}_negatives.mtx"
+    for lr in lr_list:
+        for num_negatives in num_negatives_list:
+            for negative_mode in negative_mode_list:
+                args.lr = lr
+                args.num_negatives = num_negatives
+                args.negative_mode = negative_mode
+                args.train_negative_path = f"/home/comoz/main_project/playlist_project/data/negative_sample/{args.negative_mode}/train_{args.negative_mode}_5_epochs_{args.num_negatives}_negatives.mtx"
+                args.valid_negative_path = f"/home/comoz/main_project/playlist_project/data/negative_sample/{args.negative_mode}/valid_{args.negative_mode}_5_epochs_{args.num_negatives}_negatives.mtx"
 
-    #             _train()
+                _train()
 
 
 if __name__ == "__main__":

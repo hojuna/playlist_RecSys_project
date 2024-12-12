@@ -5,15 +5,12 @@ import numpy as np
 from scipy.io import mmread, mmwrite
 from scipy.sparse import csr_matrix
 
+# fmt: off
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--default-output-path", type=str, default="/home/comoz/main_project/playlist_project/data/negative_sample/default"
-)
-parser.add_argument(
-    "--raw-output-path", type=str, default="/home/comoz/main_project/playlist_project/data/negative_sample/raw"
-)
+parser.add_argument("--default-output-path", type=str, default="/home/comoz/main_project/playlist_project/data/negative_sample/default")
+parser.add_argument("--raw-output-path", type=str, default="/home/comoz/main_project/playlist_project/data/negative_sample/raw")
 args = parser.parse_args()
-
+# fmt: on
 
 def create_negative_samples(
     raw_matrix: csr_matrix,
@@ -93,7 +90,7 @@ def main():
 
     train_matrix = mmread("/home/comoz/main_project/playlist_project/data/split_data/train_matrix.mtx").tocsr()
     valid_matrix = mmread("/home/comoz/main_project/playlist_project/data/split_data/valid_matrix.mtx").tocsr()
-
+    
     num_epochs = 5
     num_negative_samples_list = [4, 8, 16]
     matrix_dict = {"train": train_matrix, "valid": valid_matrix}
@@ -107,18 +104,6 @@ def main():
                 num_negative_samples=num_negative_samples,
                 matrix_name=matrix_name,
                 output_path=args.default_output_path,
-            )
-
-    for matrix_name, target_matrix in matrix_dict.items():
-        for num_negative_samples in num_negative_samples_list:
-            create_negative_samples(
-                raw_matrix,
-                target_matrix,
-                num_epochs=num_epochs,
-                num_negative_samples=num_negative_samples,
-                matrix_name=matrix_name,
-                sampling_range="raw",
-                output_path=args.raw_output_path,
             )
 
 

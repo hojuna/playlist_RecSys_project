@@ -10,16 +10,12 @@ from scipy.io import mmread
 from scipy.sparse import csr_matrix
 from tqdm import tqdm
 
-from mlp_baseline.deep_models import MLPModel
+from models import MLPModel
 
 argparser = ArgumentParser("preprocess_dataset")
 argparser.add_argument("--model-path", type=str, default="mlp_baseline/save_model/model2_test.pt")
 argparser.add_argument("--device", type=str, default="cuda")
-
-# 평가 모드
-argparser.add_argument("--eval-mode", type=str, default="total")
-argparser.add_argument("--num-negative", type=int, default=100)
-
+argparser.add_argument("--batch-size", type=int, default=1024)
 
 def calculate_metrics(
     model: nn.Module,
@@ -30,6 +26,7 @@ def calculate_metrics(
     k_values: list[int] = [1, 5, 10],
     num_negative: int = 10,
     eval_mode: str = "total",
+    batch_size: int = 1024,
 ):
     """모델 평가 함수"""
     model.eval()
@@ -57,19 +54,9 @@ def calculate_metrics(
 
             # 평가에 사용할 아이템 리스트 생성
             candidate_items = np.setdiff1d(np.arange(num_items), list(seen_items))
-
-            # 테스트 아이템과 랜덤 샘플링된 negative 아이템들을 합쳐서 평가
-            sampled_items = np.random.choice(
-                candidate_items, size=min(len(candidate_items), num_negative * len(test_items)), replace=False
-            )
-
-            if eval_mode == "total":
-                items_to_predict = np.array(list(test_items) + list(candidate_items))
-            else:
-                items_to_predict = np.array(list(test_items) + list(sampled_items))
+            items_to_predict = np.array(list(test_items) + list(candidate_items))
 
             # 배치 처리
-            batch_size = 1024
             all_scores = []
 
             for i in range(0, len(items_to_predict), batch_size):
@@ -134,27 +121,23 @@ def main():
     valid_matrix = mmread(f"{data_dir}/valid_matrix.mtx").tocsr()
     test_matrix = mmread(f"{data_dir}/test_matrix.mtx").tocsr()
 
-    # 모델 로드
     num_users, num_items = train_matrix.shape
 
     # save_model 디렉토리 내의 모든 .pt 파일 순회
     model_dir = Path("mlp_baseline/save_model")
+
     result_dir = Path("mlp_baseline/evaluation_results")
     result_dir.mkdir(parents=True, exist_ok=True)
-
-    # 결과 파일명 생성 (현재 시간 포함)
-    current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    result_file = result_dir / f"evaluation_results_{current_time}.txt"
+    result_file = result_dir / f"evaluation_results.txt"
 
     # 평가 설정 정보 저장
     with open(result_file, "w", encoding="utf-8") as f:
-        f.write(f"Evaluation Results - {current_time}\n")
         f.write(f"Evaluation Mode: {args.eval_mode}\n")
         f.write(f"Number of Negative Samples: {args.num_negative}\n")
         f.write("-" * 50 + "\n\n")
 
     def _eval():
-        model = MLPModel(num_users, num_items)
+        model = MLPModel(num_users, num_items,model_dim=16)
 
         # checkpoint에서 model_state_dict 추출
         checkpoint = torch.load(args.model_path, weights_only=True)
@@ -173,6 +156,7 @@ def main():
             device,
             num_negative=args.num_negative,
             eval_mode=args.eval_mode,
+            batch_size=args.batch_size,
         )
 
         # 결과를 파일과 콘솔에 동시에 출력

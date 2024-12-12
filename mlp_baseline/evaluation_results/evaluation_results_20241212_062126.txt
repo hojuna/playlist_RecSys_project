@@ -1,0 +1,5 @@
+Evaluation Results - 20241212_062126
+Evaluation Mode: total
+Number of Negative Samples: 100
+--------------------------------------------------
+

@@ -1,0 +1,15 @@
+Evaluation Results - 20241212_062211
+Evaluation Mode: total
+Number of Negative Samples: 100
+--------------------------------------------------
+
+
+Model: mlp_baseline/save_model/model_default_4_0.0001_lr.pt
+MAP: 0.0016
+Precision@1: 0.0007
+Precision@5: 0.0011
+Precision@10: 0.0010
+Recall@1: 0.0000
+Recall@5: 0.0002
+Recall@10: 0.0003
+--------------------------------------------------

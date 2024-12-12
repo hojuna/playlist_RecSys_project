@@ -1,0 +1,280 @@
+lr: 1e-4
+num_negatives: 4
+
+Step 50: Train Loss = 0.6618, Learning Rate = 0.0001
+Step 100: Train Loss = 0.5416, Learning Rate = 0.0001
+Step 150: Train Loss = 0.4309, Learning Rate = 0.0001
+Step 200: Train Loss = 0.3362, Learning Rate = 0.0001
+Step 200: Valid Loss = 0.7098,  Valid Positive Accuracy = 0.8884,  Valid Negative Accuracy = 0.6325
+Step 250: Train Loss = 0.2702, Learning Rate = 0.0001
+Step 300: Train Loss = 0.2203, Learning Rate = 0.0001
+Step 350: Train Loss = 0.1821, Learning Rate = 0.0001
+Step 400: Train Loss = 0.1540, Learning Rate = 0.0001
+Step 400: Valid Loss = 0.8209,  Valid Positive Accuracy = 0.9641,  Valid Negative Accuracy = 0.6912
+Step 450: Train Loss = 0.1303, Learning Rate = 0.0001
+Step 500: Train Loss = 0.1147, Learning Rate = 0.0001
+Step 550: Train Loss = 0.1007, Learning Rate = 0.0001
+Step 600: Train Loss = 0.0916, Learning Rate = 0.0001
+Step 600: Valid Loss = 0.8852,  Valid Positive Accuracy = 0.9862,  Valid Negative Accuracy = 0.7171
+Step 650: Train Loss = 0.0830, Learning Rate = 0.0001
+Step 700: Train Loss = 0.0746, Learning Rate = 0.0001
+Step 750: Train Loss = 0.0696, Learning Rate = 0.0001
+Step 800: Train Loss = 0.0660, Learning Rate = 0.0001
+Step 800: Valid Loss = 0.9065,  Valid Positive Accuracy = 0.9916,  Valid Negative Accuracy = 0.7392
+Step 850: Train Loss = 0.0607, Learning Rate = 0.0001
+Step 900: Train Loss = 0.0574, Learning Rate = 0.0001
+Step 950: Train Loss = 0.0539, Learning Rate = 0.0001
+Step 1000: Train Loss = 0.0518, Learning Rate = 0.0001
+Step 1000: Valid Loss = 0.8947,  Valid Positive Accuracy = 0.9936,  Valid Negative Accuracy = 0.7476
+Step 1050: Train Loss = 0.0511, Learning Rate = 0.0001
+Step 1100: Train Loss = 0.0490, Learning Rate = 0.0001
+Step 1150: Train Loss = 0.0446, Learning Rate = 0.0001
+Step 1200: Train Loss = 0.0418, Learning Rate = 0.0001
+Step 1200: Valid Loss = 0.8850,  Valid Positive Accuracy = 0.9941,  Valid Negative Accuracy = 0.7675
+Step 1250: Train Loss = 0.0410, Learning Rate = 0.0001
+Step 1300: Train Loss = 0.0402, Learning Rate = 0.0001
+Step 1350: Train Loss = 0.0351, Learning Rate = 0.0001
+Step 1400: Train Loss = 0.0373, Learning Rate = 0.0001
+Step 1400: Valid Loss = 0.8923,  Valid Positive Accuracy = 0.9946,  Valid Negative Accuracy = 0.7766
+Step 1450: Train Loss = 0.0359, Learning Rate = 0.0001
+Step 1500: Train Loss = 0.0364, Learning Rate = 0.0001
+Step 1550: Train Loss = 0.0348, Learning Rate = 0.0001
+Step 1600: Train Loss = 0.0338, Learning Rate = 0.0001
+Step 1600: Valid Loss = 0.8862,  Valid Positive Accuracy = 0.9948,  Valid Negative Accuracy = 0.7822
+Step 1650: Train Loss = 0.0329, Learning Rate = 0.0001
+Step 1700: Train Loss = 0.0325, Learning Rate = 0.0001
+Step 1750: Train Loss = 0.0311, Learning Rate = 0.0001
+Step 1800: Train Loss = 0.0319, Learning Rate = 0.0001
+Step 1800: Valid Loss = 0.8787,  Valid Positive Accuracy = 0.9949,  Valid Negative Accuracy = 0.7882
+Step 1850: Train Loss = 0.0292, Learning Rate = 0.0001
+Step 1900: Train Loss = 0.0305, Learning Rate = 0.0001
+Step 1950: Train Loss = 0.0310, Learning Rate = 0.0001
+Step 2000: Train Loss = 0.0271, Learning Rate = 0.0001
+Step 2000: Valid Loss = 0.8788,  Valid Positive Accuracy = 0.9949,  Valid Negative Accuracy = 0.7931
+Step 2050: Train Loss = 0.0286, Learning Rate = 0.0001
+Step 2100: Train Loss = 0.0273, Learning Rate = 0.0001
+Step 2150: Train Loss = 0.0277, Learning Rate = 0.0001
+Step 2200: Train Loss = 0.0266, Learning Rate = 0.0001
+Step 2200: Valid Loss = 0.8764,  Valid Positive Accuracy = 0.9949,  Valid Negative Accuracy = 0.7997
+Step 2250: Train Loss = 0.0274, Learning Rate = 0.0001
+Step 2300: Train Loss = 0.0251, Learning Rate = 0.0001
+Step 2350: Train Loss = 0.0247, Learning Rate = 0.0001
+Step 2400: Train Loss = 0.0238, Learning Rate = 0.0001
+Step 2400: Valid Loss = 0.8786,  Valid Positive Accuracy = 0.9948,  Valid Negative Accuracy = 0.8079
+Step 2450: Train Loss = 0.0247, Learning Rate = 0.0001
+Step 2500: Train Loss = 0.0250, Learning Rate = 0.0001
+Step 2550: Train Loss = 0.0245, Learning Rate = 0.0001
+Step 2600: Train Loss = 0.0256, Learning Rate = 0.0001
+Step 2600: Valid Loss = 0.8758,  Valid Positive Accuracy = 0.9948,  Valid Negative Accuracy = 0.8101
+Step 2650: Train Loss = 0.0231, Learning Rate = 0.0001
+Step 2700: Train Loss = 0.0235, Learning Rate = 0.0001
+Step 2750: Train Loss = 0.0225, Learning Rate = 0.0001
+Step 2800: Train Loss = 0.0235, Learning Rate = 0.0001
+Step 2800: Valid Loss = 0.8734,  Valid Positive Accuracy = 0.9947,  Valid Negative Accuracy = 0.8134
+Step 2850: Train Loss = 0.0224, Learning Rate = 0.0001
+Step 2900: Train Loss = 0.0237, Learning Rate = 0.0001
+Step 2950: Train Loss = 0.0239, Learning Rate = 0.0001
+Step 3000: Train Loss = 0.0231, Learning Rate = 0.0001
+Step 3000: Valid Loss = 0.8754,  Valid Positive Accuracy = 0.9946,  Valid Negative Accuracy = 0.8176
+Step 3050: Train Loss = 0.0231, Learning Rate = 0.0001
+Step 3100: Train Loss = 0.0213, Learning Rate = 0.0001
+Step 3150: Train Loss = 0.0222, Learning Rate = 0.0001
+Step 3200: Train Loss = 0.0227, Learning Rate = 0.0001
+Step 3200: Valid Loss = 0.8711,  Valid Positive Accuracy = 0.9946,  Valid Negative Accuracy = 0.8182
+Step 3250: Train Loss = 0.0227, Learning Rate = 0.0001
+Step 3300: Train Loss = 0.0231, Learning Rate = 0.0001
+Step 3350: Train Loss = 0.0216, Learning Rate = 0.0001
+Step 3400: Train Loss = 0.0204, Learning Rate = 0.0001
+Step 3400: Valid Loss = 0.8709,  Valid Positive Accuracy = 0.9946,  Valid Negative Accuracy = 0.8209
+Step 3450: Train Loss = 0.0212, Learning Rate = 0.0001
+Step 3500: Train Loss = 0.0205, Learning Rate = 0.0001
+Step 3550: Train Loss = 0.0224, Learning Rate = 0.0001
+Step 3600: Train Loss = 0.0225, Learning Rate = 0.0001
+Step 3600: Valid Loss = 0.8623,  Valid Positive Accuracy = 0.9946,  Valid Negative Accuracy = 0.8221
+Step 3650: Train Loss = 0.0222, Learning Rate = 0.0001
+Step 3700: Train Loss = 0.0215, Learning Rate = 0.0001
+Step 3750: Train Loss = 0.0191, Learning Rate = 0.0001
+Step 3800: Train Loss = 0.0208, Learning Rate = 0.0001
+Step 3800: Valid Loss = 0.8586,  Valid Positive Accuracy = 0.9945,  Valid Negative Accuracy = 0.8258
+Step 3850: Train Loss = 0.0210, Learning Rate = 0.0001
+Step 3900: Train Loss = 0.0180, Learning Rate = 0.0001
+Step 3950: Train Loss = 0.0212, Learning Rate = 0.0001
+Step 4000: Train Loss = 0.0199, Learning Rate = 0.0001
+Step 4000: Valid Loss = 0.8608,  Valid Positive Accuracy = 0.9945,  Valid Negative Accuracy = 0.8265
+Step 4050: Train Loss = 0.0203, Learning Rate = 0.0001
+Step 4100: Train Loss = 0.0201, Learning Rate = 0.0001
+Step 4150: Train Loss = 0.0202, Learning Rate = 0.0001
+Step 4200: Train Loss = 0.0209, Learning Rate = 0.0001
+Step 4200: Valid Loss = 0.8604,  Valid Positive Accuracy = 0.9945,  Valid Negative Accuracy = 0.8266
+Step 4250: Train Loss = 0.0208, Learning Rate = 0.0001
+Step 4300: Train Loss = 0.0193, Learning Rate = 0.0001
+Step 4350: Train Loss = 0.0204, Learning Rate = 0.0001
+Step 4400: Train Loss = 0.0206, Learning Rate = 0.0001
+Step 4400: Valid Loss = 0.8583,  Valid Positive Accuracy = 0.9945,  Valid Negative Accuracy = 0.8269
+Step 4450: Train Loss = 0.0194, Learning Rate = 0.0001
+Step 4500: Train Loss = 0.0197, Learning Rate = 0.0001
+Step 4550: Train Loss = 0.0199, Learning Rate = 0.0001
+Step 4600: Train Loss = 0.0200, Learning Rate = 0.0001
+Step 4600: Valid Loss = 0.8565,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8280
+Step 4650: Train Loss = 0.0189, Learning Rate = 0.0001
+Step 4700: Train Loss = 0.0194, Learning Rate = 0.0001
+Step 4750: Train Loss = 0.0198, Learning Rate = 0.0001
+Step 4800: Train Loss = 0.0179, Learning Rate = 0.0001
+Step 4800: Valid Loss = 0.8572,  Valid Positive Accuracy = 0.9945,  Valid Negative Accuracy = 0.8276
+Step 4850: Train Loss = 0.0187, Learning Rate = 0.0001
+Step 4900: Train Loss = 0.0188, Learning Rate = 0.0001
+Step 4950: Train Loss = 0.0184, Learning Rate = 0.0001
+Step 5000: Train Loss = 0.0184, Learning Rate = 0.0001
+Step 5000: Valid Loss = 0.8608,  Valid Positive Accuracy = 0.9945,  Valid Negative Accuracy = 0.8272
+Step 5050: Train Loss = 0.0169, Learning Rate = 0.0001
+Step 5100: Train Loss = 0.0182, Learning Rate = 0.0001
+Step 5150: Train Loss = 0.0174, Learning Rate = 0.0001
+Step 5200: Train Loss = 0.0185, Learning Rate = 0.0001
+Step 5200: Valid Loss = 0.8663,  Valid Positive Accuracy = 0.9945,  Valid Negative Accuracy = 0.8275
+Step 5250: Train Loss = 0.0186, Learning Rate = 0.0001
+Step 5300: Train Loss = 0.0187, Learning Rate = 0.0001
+Step 5350: Train Loss = 0.0170, Learning Rate = 0.0001
+Step 5400: Train Loss = 0.0195, Learning Rate = 0.0001
+Step 5400: Valid Loss = 0.8643,  Valid Positive Accuracy = 0.9945,  Valid Negative Accuracy = 0.8274
+Step 5450: Train Loss = 0.0190, Learning Rate = 0.0001
+Step 5500: Train Loss = 0.0167, Learning Rate = 0.0001
+Step 5550: Train Loss = 0.0171, Learning Rate = 0.0001
+Step 5600: Train Loss = 0.0175, Learning Rate = 0.0000
+Step 5600: Valid Loss = 0.8654,  Valid Positive Accuracy = 0.9945,  Valid Negative Accuracy = 0.8281
+Step 5650: Train Loss = 0.0192, Learning Rate = 0.0000
+Step 5700: Train Loss = 0.0174, Learning Rate = 0.0000
+Step 5750: Train Loss = 0.0171, Learning Rate = 0.0000
+Step 5800: Train Loss = 0.0189, Learning Rate = 0.0000
+Step 5800: Valid Loss = 0.8656,  Valid Positive Accuracy = 0.9945,  Valid Negative Accuracy = 0.8289
+Step 5850: Train Loss = 0.0182, Learning Rate = 0.0000
+Step 5900: Train Loss = 0.0180, Learning Rate = 0.0000
+Step 5950: Train Loss = 0.0180, Learning Rate = 0.0000
+Step 6000: Train Loss = 0.0181, Learning Rate = 0.0000
+Step 6000: Valid Loss = 0.8636,  Valid Positive Accuracy = 0.9945,  Valid Negative Accuracy = 0.8304
+Step 6050: Train Loss = 0.0174, Learning Rate = 0.0000
+Step 6100: Train Loss = 0.0186, Learning Rate = 0.0000
+Step 6150: Train Loss = 0.0194, Learning Rate = 0.0000
+Step 6200: Train Loss = 0.0169, Learning Rate = 0.0000
+Step 6200: Valid Loss = 0.8664,  Valid Positive Accuracy = 0.9945,  Valid Negative Accuracy = 0.8307
+Step 6250: Train Loss = 0.0177, Learning Rate = 0.0000
+Step 6300: Train Loss = 0.0176, Learning Rate = 0.0000
+Step 6350: Train Loss = 0.0172, Learning Rate = 0.0000
+Step 6400: Train Loss = 0.0192, Learning Rate = 0.0000
+Step 6400: Valid Loss = 0.8679,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8314
+Step 6450: Train Loss = 0.0181, Learning Rate = 0.0000
+Step 6500: Train Loss = 0.0186, Learning Rate = 0.0000
+Step 6550: Train Loss = 0.0169, Learning Rate = 0.0000
+Step 6600: Train Loss = 0.0172, Learning Rate = 0.0000
+Step 6600: Valid Loss = 0.8722,  Valid Positive Accuracy = 0.9945,  Valid Negative Accuracy = 0.8321
+Step 6650: Train Loss = 0.0184, Learning Rate = 0.0000
+Step 6700: Train Loss = 0.0162, Learning Rate = 0.0000
+Step 6750: Train Loss = 0.0177, Learning Rate = 0.0000
+Step 6800: Train Loss = 0.0189, Learning Rate = 0.0000
+Step 6800: Valid Loss = 0.8744,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8332
+Step 6850: Train Loss = 0.0173, Learning Rate = 0.0000
+Step 6900: Train Loss = 0.0171, Learning Rate = 0.0000
+Step 6950: Train Loss = 0.0165, Learning Rate = 0.0000
+Step 7000: Train Loss = 0.0167, Learning Rate = 0.0000
+Step 7000: Valid Loss = 0.8772,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8347
+Step 7050: Train Loss = 0.0170, Learning Rate = 0.0000
+Step 7100: Train Loss = 0.0171, Learning Rate = 0.0000
+Step 7150: Train Loss = 0.0165, Learning Rate = 0.0000
+Step 7200: Train Loss = 0.0167, Learning Rate = 0.0000
+Step 7200: Valid Loss = 0.8810,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8352
+Step 7250: Train Loss = 0.0178, Learning Rate = 0.0000
+Step 7300: Train Loss = 0.0154, Learning Rate = 0.0000
+Step 7350: Train Loss = 0.0183, Learning Rate = 0.0000
+Step 7400: Train Loss = 0.0170, Learning Rate = 0.0000
+Step 7400: Valid Loss = 0.8809,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8352
+Step 7450: Train Loss = 0.0165, Learning Rate = 0.0000
+Step 7500: Train Loss = 0.0149, Learning Rate = 0.0000
+Step 7550: Train Loss = 0.0171, Learning Rate = 0.0000
+Step 7600: Train Loss = 0.0154, Learning Rate = 0.0000
+Step 7600: Valid Loss = 0.8849,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8350
+Step 7650: Train Loss = 0.0174, Learning Rate = 0.0000
+Step 7700: Train Loss = 0.0175, Learning Rate = 0.0000
+Step 7750: Train Loss = 0.0160, Learning Rate = 0.0000
+Step 7800: Train Loss = 0.0170, Learning Rate = 0.0000
+Step 7800: Valid Loss = 0.8862,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8347
+Step 7850: Train Loss = 0.0186, Learning Rate = 0.0000
+Step 7900: Train Loss = 0.0155, Learning Rate = 0.0000
+Step 7950: Train Loss = 0.0165, Learning Rate = 0.0000
+Step 8000: Train Loss = 0.0175, Learning Rate = 0.0000
+Step 8000: Valid Loss = 0.8849,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8359
+Step 8050: Train Loss = 0.0175, Learning Rate = 0.0000
+Step 8100: Train Loss = 0.0175, Learning Rate = 0.0000
+Step 8150: Train Loss = 0.0181, Learning Rate = 0.0000
+Step 8200: Train Loss = 0.0183, Learning Rate = 0.0000
+Step 8200: Valid Loss = 0.8846,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8358
+Step 8250: Train Loss = 0.0168, Learning Rate = 0.0000
+Step 8300: Train Loss = 0.0174, Learning Rate = 0.0000
+Step 8350: Train Loss = 0.0154, Learning Rate = 0.0000
+Step 8400: Train Loss = 0.0156, Learning Rate = 0.0000
+Step 8400: Valid Loss = 0.8861,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8366
+Step 8450: Train Loss = 0.0168, Learning Rate = 0.0000
+Step 8500: Train Loss = 0.0178, Learning Rate = 0.0000
+Step 8550: Train Loss = 0.0171, Learning Rate = 0.0000
+Step 8600: Train Loss = 0.0181, Learning Rate = 0.0000
+Step 8600: Valid Loss = 0.8859,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8367
+Step 8650: Train Loss = 0.0165, Learning Rate = 0.0000
+Step 8700: Train Loss = 0.0177, Learning Rate = 0.0000
+Step 8750: Train Loss = 0.0157, Learning Rate = 0.0000
+Step 8800: Train Loss = 0.0155, Learning Rate = 0.0000
+Step 8800: Valid Loss = 0.8857,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8374
+Step 8850: Train Loss = 0.0167, Learning Rate = 0.0000
+Step 8900: Train Loss = 0.0172, Learning Rate = 0.0000
+Step 8950: Train Loss = 0.0166, Learning Rate = 0.0000
+Step 9000: Train Loss = 0.0166, Learning Rate = 0.0000
+Step 9000: Valid Loss = 0.8857,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8378
+Step 9050: Train Loss = 0.0173, Learning Rate = 0.0000
+Step 9100: Train Loss = 0.0173, Learning Rate = 0.0000
+Step 9150: Train Loss = 0.0156, Learning Rate = 0.0000
+Step 9200: Train Loss = 0.0162, Learning Rate = 0.0000
+Step 9200: Valid Loss = 0.8873,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8372
+Step 9250: Train Loss = 0.0174, Learning Rate = 0.0000
+Step 9300: Train Loss = 0.0154, Learning Rate = 0.0000
+Step 9350: Train Loss = 0.0160, Learning Rate = 0.0000
+Step 9400: Train Loss = 0.0167, Learning Rate = 0.0000
+Step 9400: Valid Loss = 0.8870,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8376
+Step 9450: Train Loss = 0.0176, Learning Rate = 0.0000
+Step 9500: Train Loss = 0.0176, Learning Rate = 0.0000
+Step 9550: Train Loss = 0.0165, Learning Rate = 0.0000
+Step 9600: Train Loss = 0.0172, Learning Rate = 0.0000
+Step 9600: Valid Loss = 0.8872,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8378
+Step 9650: Train Loss = 0.0168, Learning Rate = 0.0000
+Step 9700: Train Loss = 0.0166, Learning Rate = 0.0000
+Step 9750: Train Loss = 0.0177, Learning Rate = 0.0000
+Step 9800: Train Loss = 0.0169, Learning Rate = 0.0000
+Step 9800: Valid Loss = 0.8879,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8376
+Step 9850: Train Loss = 0.0161, Learning Rate = 0.0000
+Step 9900: Train Loss = 0.0165, Learning Rate = 0.0000
+Step 9950: Train Loss = 0.0157, Learning Rate = 0.0000
+Step 10000: Train Loss = 0.0171, Learning Rate = 0.0000
+Step 10000: Valid Loss = 0.8880,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8377
+Step 10050: Train Loss = 0.0161, Learning Rate = 0.0000
+Step 10100: Train Loss = 0.0171, Learning Rate = 0.0000
+Step 10150: Train Loss = 0.0161, Learning Rate = 0.0000
+Step 10200: Train Loss = 0.0173, Learning Rate = 0.0000
+Step 10200: Valid Loss = 0.8882,  Valid Positive Accuracy = 0.9944,  Valid Negative Accuracy = 0.8376
+Step 10250: Train Loss = 0.0159, Learning Rate = 0.0000
+Step 10300: Train Loss = 0.0170, Learning Rate = 0.0000
+Step 10350: Train Loss = 0.0160, Learning Rate = 0.0000
+Step 10400: Train Loss = 0.0172, Learning Rate = 0.0000
+Step 10400: Valid Loss = 0.8882,  Valid Positive Accuracy = 0.9943,  Valid Negative Accuracy = 0.8378
+Step 10450: Train Loss = 0.0168, Learning Rate = 0.0000
+Step 10500: Train Loss = 0.0163, Learning Rate = 0.0000
+Step 10550: Train Loss = 0.0161, Learning Rate = 0.0000
+Step 10600: Train Loss = 0.0150, Learning Rate = 0.0000
+Step 10600: Valid Loss = 0.8883,  Valid Positive Accuracy = 0.9943,  Valid Negative Accuracy = 0.8378
+Step 10650: Train Loss = 0.0164, Learning Rate = 0.0000
+Step 10700: Train Loss = 0.0173, Learning Rate = 0.0000
+Step 10750: Train Loss = 0.0183, Learning Rate = 0.0000
+Step 10800: Train Loss = 0.0158, Learning Rate = 0.0000
+Step 10800: Valid Loss = 0.8883,  Valid Positive Accuracy = 0.9943,  Valid Negative Accuracy = 0.8378
+Step 10850: Train Loss = 0.0161, Learning Rate = 0.0000
+Step 10900: Train Loss = 0.0163, Learning Rate = 0.0000
+Step 10950: Train Loss = 0.0141, Learning Rate = 0.0000
+Step 11000: Train Loss = 0.0165, Learning Rate = 0.0000
+Step 11000: Valid Loss = 0.8883,  Valid Positive Accuracy = 0.9943,  Valid Negative Accuracy = 0.8378
+Step 11050: Train Loss = 0.0173, Learning Rate = 0.0000
+Step 11100: Train Loss = 0.0165, Learning Rate = 0.0000
