@@ -24,8 +24,6 @@ def calculate_metrics(
     valid_matrix: csr_matrix,
     device: str,
     k_values: list[int] = [1, 5, 10],
-    num_negative: int = 10,
-    eval_mode: str = "total",
     batch_size: int = 1024,
 ):
     """모델 평가 함수"""
@@ -132,12 +130,10 @@ def main():
 
     # 평가 설정 정보 저장
     with open(result_file, "w", encoding="utf-8") as f:
-        f.write(f"Evaluation Mode: {args.eval_mode}\n")
-        f.write(f"Number of Negative Samples: {args.num_negative}\n")
         f.write("-" * 50 + "\n\n")
 
     def _eval():
-        model = MLPModel(num_users, num_items,model_dim=16)
+        model = MLPModel(num_users, num_items)
 
         # checkpoint에서 model_state_dict 추출
         checkpoint = torch.load(args.model_path, weights_only=True)
@@ -154,8 +150,6 @@ def main():
             train_matrix,
             valid_matrix,
             device,
-            num_negative=args.num_negative,
-            eval_mode=args.eval_mode,
             batch_size=args.batch_size,
         )
 

@@ -2,6 +2,7 @@ import os
 import random
 from argparse import ArgumentParser, Namespace
 from typing import Tuple
+import pickle
 
 import numpy as np
 import torch
@@ -15,8 +16,8 @@ from tqdm import tqdm
 
 # fmt: off
 argparser = ArgumentParser("preprocess_dataset")
-argparser.add_argument("--train-path", type=str, default="/home/comoz/main_project/playlist_project/data/split_data/train_matrix.mtx")
-argparser.add_argument("--valid-path", type=str, default="/home/comoz/main_project/playlist_project/data/split_data/valid_matrix.mtx")
+argparser.add_argument("--train-path", type=str, default="/home/comoz/main_project/playlist_project/data/split_data/train_data.mtx")
+argparser.add_argument("--valid-path", type=str, default="/home/comoz/main_project/playlist_project/data/split_data/valid_data.mtx")
 argparser.add_argument("--save-path", type=str, default="/home/comoz/main_project/playlist_project/mlp_baseline/save_model")
 argparser.add_argument("--train-negative-path", type=str, default="/home/comoz/main_project/playlist_project/data/negative_sample/default/train_default_5_epochs_4_negatives.mtx")
 argparser.add_argument("--valid-negative-path", type=str, default="/home/comoz/main_project/playlist_project/data/negative_sample/default/valid_default_5_epochs_4_negatives.mtx")
@@ -27,7 +28,7 @@ argparser.add_argument("--valid-batch-size", type=int, default=4096)
 argparser.add_argument("--num-negatives", type=int, default=4)  # 4, 8, 16
 argparser.add_argument("--model-dim", type=int, default=128)
 argparser.add_argument("--dropout", type=float, default=0.5)    
-argparser.add_argument("--lr", type=float, default=1e-4)  # 1e-4, 1e-3, 5e-3, 1e-2, 1e-1
+argparser.add_argument("--lr", type=float, default=1e-3)  # 1e-4, 1e-3, 5e-3, 1e-2, 1e-1
 argparser.add_argument("--weight-decay", type=float, default=1e-4)
 argparser.add_argument("--log-interval", type=int, default=50)
 argparser.add_argument("--valid-interval", type=int, default=200)
@@ -76,7 +77,7 @@ def train_model(
             positive_ids = positive_ids.to(device)
             negative_ids = negative_ids.to(device)
             if state:
-                print(user_ids[0],positive_ids[0],negative_ids[0])
+                print(user_ids[:10],positive_ids[:10],negative_ids[:10])
                 state=False
 
             total_ids = torch.cat([positive_ids, negative_ids], dim=1)
@@ -217,8 +218,14 @@ def main():
 
 
     def _train():
-        train_negative_matrix = mmread(args.train_negative_path).tocsr()
-        valid_negative_matrix = mmread(args.valid_negative_path).tocsr()
+        # with open("/home/comoz/main_project/playlist_project/data/negative_sample/default/negative_samples.pkl", "rb") as f:
+        #     train_negative_matrix = pickle.load(f)
+
+        # with open(args.valid_negative_path, "rb") as f:
+        #     valid_negative_matrix = pickle.load(f)
+
+        train_negative_matrix = mmread("/home/comoz/main_project/playlist_project/data/split_data/negative_train_data.mtx").tocsr()
+        valid_negative_matrix = mmread("/home/comoz/main_project/playlist_project/data/split_data/negative_valid_data.mtx").tocsr()
 
         # 데이터셋 생성
         train_dataset = MLPDataset(train_matrix, train_negative_matrix, num_negatives=args.num_negatives)
@@ -277,16 +284,16 @@ def main():
     negative_mode_list = ["default"]
     _train()
 
-    for lr in lr_list:
-        for num_negatives in num_negatives_list:
-            for negative_mode in negative_mode_list:
-                args.lr = lr
-                args.num_negatives = num_negatives
-                args.negative_mode = negative_mode
-                args.train_negative_path = f"/home/comoz/main_project/playlist_project/data/negative_sample/{args.negative_mode}/train_{args.negative_mode}_5_epochs_{args.num_negatives}_negatives.mtx"
-                args.valid_negative_path = f"/home/comoz/main_project/playlist_project/data/negative_sample/{args.negative_mode}/valid_{args.negative_mode}_5_epochs_{args.num_negatives}_negatives.mtx"
+    # for lr in lr_list:
+    #     for num_negatives in num_negatives_list:
+    #         for negative_mode in negative_mode_list:
+    #             args.lr = lr
+    #             args.num_negatives = num_negatives
+    #             args.negative_mode = negative_mode
+    #             args.train_negative_path = f"/home/comoz/main_project/playlist_project/data/negative_sample/{args.negative_mode}/train_{args.negative_mode}_5_epochs_{args.num_negatives}_negatives.mtx"
+    #             args.valid_negative_path = f"/home/comoz/main_project/playlist_project/data/negative_sample/{args.negative_mode}/valid_{args.negative_mode}_5_epochs_{args.num_negatives}_negatives.mtx"
 
-                _train()
+    #             _train()
 
 
 if __name__ == "__main__":

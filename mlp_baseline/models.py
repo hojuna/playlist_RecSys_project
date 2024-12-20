@@ -11,6 +11,9 @@ class MLPModel(nn.Module):
         self.user_embedding = nn.Embedding(num_users, model_dim)
         self.item_embedding = nn.Embedding(num_items, model_dim)
 
+        self.user_embedding.weight.data.uniform_(-0.005, 0.005)
+        self.item_embedding.weight.data.uniform_(-0.005, 0.005)
+
         self.user_mlp = nn.Sequential(
             nn.LayerNorm(model_dim),
             nn.Linear(model_dim, model_dim),
