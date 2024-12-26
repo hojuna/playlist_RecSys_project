@@ -21,9 +21,9 @@ def load_model_and_data(args: Namespace) -> tuple[NMF, csr_matrix, csr_matrix, c
     model_path = args.model_path
 
     # 테스트 데이터 로드
-    test_matrix = mmread(os.path.join(data_path, "test_matrix.mtx")).tocsr()
-    train_matrix = mmread(os.path.join(data_path, "train_matrix.mtx")).tocsr()
-    valid_matrix = mmread(os.path.join(data_path, "valid_matrix.mtx")).tocsr()
+    test_matrix = mmread(os.path.join(data_path, "test_data.mtx")).tocsr()
+    train_matrix = mmread(os.path.join(data_path, "train_data.mtx")).tocsr()
+    valid_matrix = mmread(os.path.join(data_path, "valid_data.mtx")).tocsr()
 
     # 모델 로드
     with open(model_path, "rb") as f:

@@ -1,62 +1,3 @@
-Final Training Results
---------------------------------------------------
-Model Configuration:
-Total Epochs: 5
-Learning Rate: 0.0001
-Number of Negatives: 4
-Negative Sampling Mode: default
---------------------------------------------------
-
-Final Validation Results:
-Valid Loss: 1.0553
-Valid Positive Accuracy: 0.6581
-Valid Negative Accuracy: 0.4494
-Best Valid Loss: 0.6941
---------------------------------------------------
-Final Training Results
---------------------------------------------------
-Model Configuration:
-Total Epochs: 5
-Learning Rate: 0.0001
-Number of Negatives: 4
-Negative Sampling Mode: default
---------------------------------------------------
-
-Final Validation Results:
-Valid Loss: 1.0882
-Valid Positive Accuracy: 0.6524
-Valid Negative Accuracy: 0.4612
-Best Valid Loss: 0.6943
---------------------------------------------------
-Final Training Results
---------------------------------------------------
-Model Configuration:
-Total Epochs: 5
-Learning Rate: 0.0001
-Number of Negatives: 8
-Negative Sampling Mode: default
---------------------------------------------------
-
-Final Validation Results:
-Valid Loss: 0.8393
-Valid Positive Accuracy: 0.5915
-Valid Negative Accuracy: 0.5447
-Best Valid Loss: 0.6928
---------------------------------------------------
-Final Training Results
---------------------------------------------------
-Model Configuration:
-Total Epochs: 5
-Learning Rate: 0.0001
-Number of Negatives: 16
-Negative Sampling Mode: default
---------------------------------------------------
-
-Final Validation Results:
-Valid Loss: 0.7269
-Valid Positive Accuracy: 0.5077
-Valid Negative Accuracy: 0.6595
-Best Valid Loss: 0.6917
 --------------------------------------------------
 Final Training Results
 --------------------------------------------------
@@ -68,130 +9,85 @@ Negative Sampling Mode: default
 --------------------------------------------------
 
 Final Validation Results:
-Valid Loss: 3.6041
-Valid Positive Accuracy: 0.8038
-Valid Negative Accuracy: 0.2521
-Best Valid Loss: 0.7164
+Valid Loss: 1.0025
+Valid Positive Accuracy: 0.4266
+Valid Negative Accuracy: 0.6036
+Best Valid Loss: 0.6868
 --------------------------------------------------
 Final Training Results
 --------------------------------------------------
 Model Configuration:
 Total Epochs: 5
 Learning Rate: 0.001
-Number of Negatives: 8
+Number of Negatives: 4
 Negative Sampling Mode: default
 --------------------------------------------------
 
 Final Validation Results:
-Valid Loss: 2.5121
-Valid Positive Accuracy: 0.6781
-Valid Negative Accuracy: 0.4091
-Best Valid Loss: 0.6973
+Valid Loss: 1.1560
+Valid Positive Accuracy: 0.3441
+Valid Negative Accuracy: 0.6906
+Best Valid Loss: 0.6884
 --------------------------------------------------
 Final Training Results
 --------------------------------------------------
 Model Configuration:
 Total Epochs: 5
 Learning Rate: 0.001
-Number of Negatives: 16
-Negative Sampling Mode: default
---------------------------------------------------
-
-Final Validation Results:
-Valid Loss: 1.9945
-Valid Positive Accuracy: 0.5661
-Valid Negative Accuracy: 0.5699
-Best Valid Loss: 0.6923
---------------------------------------------------
-Final Training Results
---------------------------------------------------
-Model Configuration:
-Total Epochs: 5
-Learning Rate: 0.005
 Number of Negatives: 4
 Negative Sampling Mode: default
 --------------------------------------------------
 
 Final Validation Results:
-Valid Loss: 6.4036
-Valid Positive Accuracy: 0.8444
-Valid Negative Accuracy: 0.2054
-Best Valid Loss: 1.3920
+Valid Loss: 0.5083
+Valid Positive Accuracy: 0.8024
+Valid Negative Accuracy: 0.6876
+Best Valid Loss: 0.5082
 --------------------------------------------------
 Final Training Results
 --------------------------------------------------
 Model Configuration:
 Total Epochs: 5
-Learning Rate: 0.005
-Number of Negatives: 8
-Negative Sampling Mode: default
---------------------------------------------------
-
-Final Validation Results:
-Valid Loss: 5.5086
-Valid Positive Accuracy: 0.7269
-Valid Negative Accuracy: 0.3524
-Best Valid Loss: 0.9126
---------------------------------------------------
-Final Training Results
---------------------------------------------------
-Model Configuration:
-Total Epochs: 5
-Learning Rate: 0.005
-Number of Negatives: 16
-Negative Sampling Mode: default
---------------------------------------------------
-
-Final Validation Results:
-Valid Loss: 3.7439
-Valid Positive Accuracy: 0.6314
-Valid Negative Accuracy: 0.4928
-Best Valid Loss: 0.7542
---------------------------------------------------
-Final Training Results
---------------------------------------------------
-Model Configuration:
-Total Epochs: 5
-Learning Rate: 0.01
+Learning Rate: 0.001
 Number of Negatives: 4
 Negative Sampling Mode: default
 --------------------------------------------------
 
 Final Validation Results:
-Valid Loss: 9.3005
-Valid Positive Accuracy: 0.8458
-Valid Negative Accuracy: 0.1977
-Best Valid Loss: 1.6947
+Valid Loss: 0.4782
+Valid Positive Accuracy: 0.8036
+Valid Negative Accuracy: 0.7388
+Best Valid Loss: 0.4782
 --------------------------------------------------
 Final Training Results
 --------------------------------------------------
 Model Configuration:
 Total Epochs: 5
-Learning Rate: 0.01
-Number of Negatives: 8
+Learning Rate: 0.001
+Number of Negatives: 4
 Negative Sampling Mode: default
 --------------------------------------------------
 
 Final Validation Results:
-Valid Loss: 6.9595
-Valid Positive Accuracy: 0.7702
-Valid Negative Accuracy: 0.3050
-Best Valid Loss: 1.1087
+Valid Loss: 0.4767
+Valid Positive Accuracy: 0.8027
+Valid Negative Accuracy: 0.7418
+Best Valid Loss: 0.4767
 --------------------------------------------------
 Final Training Results
 --------------------------------------------------
 Model Configuration:
 Total Epochs: 5
-Learning Rate: 0.01
-Number of Negatives: 16
+Learning Rate: 0.001
+Number of Negatives: 4
 Negative Sampling Mode: default
 --------------------------------------------------
 
 Final Validation Results:
-Valid Loss: 4.5082
-Valid Positive Accuracy: 0.6474
-Valid Negative Accuracy: 0.4755
-Best Valid Loss: 0.7742
+Valid Loss: 0.4754
+Valid Positive Accuracy: 0.7977
+Valid Negative Accuracy: 0.7498
+Best Valid Loss: 0.4750
 --------------------------------------------------
 Final Training Results
 --------------------------------------------------
@@ -203,98 +99,83 @@ Negative Sampling Mode: default
 --------------------------------------------------
 
 Final Validation Results:
-Valid Loss: 11.6031
-Valid Positive Accuracy: 0.9462
-Valid Negative Accuracy: 0.0745
-Best Valid Loss: 2.0036
+Valid Loss: 0.6933
+Valid Positive Accuracy: 1.0000
+Valid Negative Accuracy: 0.0000
+Best Valid Loss: 0.6913
 --------------------------------------------------
 Final Training Results
 --------------------------------------------------
 Model Configuration:
 Total Epochs: 5
-Learning Rate: 0.1
-Number of Negatives: 8
-Negative Sampling Mode: default
---------------------------------------------------
-
-Final Validation Results:
-Valid Loss: 9.4110
-Valid Positive Accuracy: 0.7833
-Valid Negative Accuracy: 0.2881
-Best Valid Loss: 1.2366
---------------------------------------------------
-Final Training Results
---------------------------------------------------
-Model Configuration:
-Total Epochs: 5
-Learning Rate: 0.1
+Learning Rate: 0.005
 Number of Negatives: 16
 Negative Sampling Mode: default
 --------------------------------------------------
 
 Final Validation Results:
-Valid Loss: 6.5478
-Valid Positive Accuracy: 0.6667
-Valid Negative Accuracy: 0.4423
-Best Valid Loss: 0.8318
+Valid Loss: 0.4838
+Valid Positive Accuracy: 0.8016
+Valid Negative Accuracy: 0.7392
+Best Valid Loss: 0.4829
 --------------------------------------------------
 Final Training Results
 --------------------------------------------------
 Model Configuration:
 Total Epochs: 5
-Learning Rate: 0.001
-Number of Negatives: 4
+Learning Rate: 0.005
+Number of Negatives: 16
 Negative Sampling Mode: default
 --------------------------------------------------
 
 Final Validation Results:
-Valid Loss: 3.5410
-Valid Positive Accuracy: 0.6988
-Valid Negative Accuracy: 0.2914
-Best Valid Loss: inf
+Valid Loss: 0.4740
+Valid Positive Accuracy: 0.8221
+Valid Negative Accuracy: 0.7190
+Best Valid Loss: 0.4740
 --------------------------------------------------
 Final Training Results
 --------------------------------------------------
 Model Configuration:
 Total Epochs: 5
-Learning Rate: 0.001
-Number of Negatives: 4
+Learning Rate: 0.005
+Number of Negatives: 16
 Negative Sampling Mode: default
 --------------------------------------------------
 
 Final Validation Results:
-Valid Loss: 3.5169
-Valid Positive Accuracy: 0.7011
-Valid Negative Accuracy: 0.3048
-Best Valid Loss: 0.7255
+Valid Loss: 0.4740
+Valid Positive Accuracy: 0.8221
+Valid Negative Accuracy: 0.7190
+Best Valid Loss: 0.4740
 --------------------------------------------------
 Final Training Results
 --------------------------------------------------
 Model Configuration:
 Total Epochs: 5
-Learning Rate: 0.001
-Number of Negatives: 4
+Learning Rate: 0.005
+Number of Negatives: 16
 Negative Sampling Mode: default
 --------------------------------------------------
 
 Final Validation Results:
-Valid Loss: 0.9271
-Valid Positive Accuracy: 0.5211
-Valid Negative Accuracy: 0.5315
-Best Valid Loss: 0.6904
+Valid Loss: 0.4940
+Valid Positive Accuracy: 0.8009
+Valid Negative Accuracy: 0.7102
+Best Valid Loss: 0.4937
 --------------------------------------------------
 Final Training Results
 --------------------------------------------------
 Model Configuration:
-Total Epochs: 5
-Learning Rate: 0.001
-Number of Negatives: 4
+Total Epochs: 10
+Learning Rate: 0.005
+Number of Negatives: 16
 Negative Sampling Mode: default
 --------------------------------------------------
 
 Final Validation Results:
-Valid Loss: 1.2172
-Valid Positive Accuracy: 0.4226
-Valid Negative Accuracy: 0.6087
-Best Valid Loss: 0.6903
+Valid Loss: 0.4455
+Valid Positive Accuracy: 0.8115
+Valid Negative Accuracy: 0.7689
+Best Valid Loss: 0.4453
 --------------------------------------------------

@@ -11,11 +11,19 @@ from scipy.sparse import csr_matrix
 from tqdm import tqdm
 
 from models import MLPModel
+from deep_models import DeepMLPModel
 
 argparser = ArgumentParser("preprocess_dataset")
-argparser.add_argument("--model-path", type=str, default="mlp_baseline/save_model/model2_test.pt")
+argparser.add_argument(
+    "--model-path",
+    type=str,
+    default="/home/comoz/main_project/playlist_project/mlp_baseline/save_model/model_default_4_0.001_lr.pt",
+)
+
 argparser.add_argument("--device", type=str, default="cuda")
-argparser.add_argument("--batch-size", type=int, default=1024)
+argparser.add_argument("--batch-size", type=int, default=2048)
+argparser.add_argument("--model", type=str, default="mlp")
+
 
 def calculate_metrics(
     model: nn.Module,
@@ -77,10 +85,20 @@ def calculate_metrics(
 
             # 모든 배치의 점수를 합침
             scores = np.concatenate(all_scores)
+            # print(f"\n전체 예측값 평균: {scores.mean():.4f}")
+            # print(f"전체 예측값 최소: {scores.min():.4f}")
+            # print(f"전체 예측값 최대: {scores.max():.4f}")
 
             # 아이템과 점수를 정렬
             item_score_dict = dict(zip(items_to_predict, scores))
-            ranked_items = sorted(item_score_dict, key=item_score_dict.get, reverse=True)
+            ranked_items_with_scores = sorted(item_score_dict.items(), key=lambda x: x[1], reverse=True)
+
+            # print("\n상위 10개 아이템과 점수:")
+            # for item_id, score in ranked_items_with_scores[:10]:
+            #     print(f"Item: {item_id}, Score: {score:.4f}")
+
+            # 기존 평가를 위해 아이템 ID만 추출
+            ranked_items = [item for item, _ in ranked_items_with_scores]
 
             # 평가 지표 계산
             ap = 0.0
@@ -115,28 +133,36 @@ def main():
     args = argparser.parse_args()
     # 데이터 로드
     data_dir = "/home/comoz/main_project/playlist_project/data/split_data"
-    train_matrix = mmread(f"{data_dir}/train_matrix.mtx").tocsr()
-    valid_matrix = mmread(f"{data_dir}/valid_matrix.mtx").tocsr()
-    test_matrix = mmread(f"{data_dir}/test_matrix.mtx").tocsr()
+    train_matrix = mmread(f"{data_dir}/train_data.mtx").tocsr()
+    valid_matrix = mmread(f"{data_dir}/valid_data.mtx").tocsr()
+    test_matrix = mmread(f"{data_dir}/test_data.mtx").tocsr()
+
+    print(train_matrix.shape)
+    print(valid_matrix.shape)
+    print(test_matrix.shape)
 
     num_users, num_items = train_matrix.shape
 
     # save_model 디렉토리 내의 모든 .pt 파일 순회
-    model_dir = Path("mlp_baseline/save_model")
+    model_dir = Path("/home/comoz/main_project/playlist_project/mlp_baseline/save_model")
 
-    result_dir = Path("mlp_baseline/evaluation_results")
-    result_dir.mkdir(parents=True, exist_ok=True)
-    result_file = result_dir / f"evaluation_results.txt"
+    # result_dir = Path("/home/comoz/main_project/playlist_project/mlp_baseline/evaluation_results")
+    # result_dir.mkdir(parents=True, exist_ok=True)
+    # result_file = result_dir / f"evaluation_results.txt"
 
-    # 평가 설정 정보 저장
-    with open(result_file, "w", encoding="utf-8") as f:
-        f.write("-" * 50 + "\n\n")
+    # # 평가 설정 정보 저장
+    # with open(result_file, "w", encoding="utf-8") as f:
+    #     f.write("-" * 50 + "\n\n")
 
     def _eval():
-        model = MLPModel(num_users, num_items)
 
-        # checkpoint에서 model_state_dict 추출
-        checkpoint = torch.load(args.model_path, weights_only=True)
+        if args.model == "mlp":
+            model = MLPModel(num_users, num_items)
+        elif args.model == "deep_mlp":
+            print("Deep MLP Model")
+            model = DeepMLPModel(num_users, num_items)
+
+        checkpoint = torch.load(args.model_path)
         model.load_state_dict(checkpoint["model_state_dict"])
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -168,18 +194,18 @@ def main():
         # 콘솔 출력
         print(result_text)
 
-        # 파일 저장
-        with open(result_file, "a", encoding="utf-8") as f:
-            f.write(result_text)
-            f.flush()
+        # # 파일 저장
+        # with open(result_file, "a", encoding="utf-8") as f:
+        #     f.write(result_text)
+        #     f.flush()
 
     # 모든 모델 평가
-    for model_path in sorted(model_dir.glob("*.pt")):
-        print(f"\nEvaluating model: {model_path}")
-        args.model_path = str(model_path)
-        _eval()
-
-    print(f"\nResults have been saved to: {result_file}")
+    # for model_path in model_dir.glob("*.pt"):
+    #     print(f"\nEvaluating model: {model_path}")
+    #     args.model_path = str(model_path)
+    #     _eval()
+    _eval()
+    # print(f"\nResults have been saved to: {result_file}")
 
 
 if __name__ == "__main__":

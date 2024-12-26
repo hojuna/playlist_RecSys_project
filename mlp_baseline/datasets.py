@@ -33,8 +33,6 @@ class MLPDataset(Dataset):
         self.items_per_user = defaultdict(list)
         self.neg_items_per_user = defaultdict(list)
 
-
-
         # for user_idx in range(self.num_users):
         #     for item_idx in interaction_matrix[user_idx].indices:
         #         self.data.append((user_idx, item_idx))
@@ -43,11 +41,11 @@ class MLPDataset(Dataset):
         #     self.neg_items_per_user[user_idx].extend(np.random.choice(neg_items, size=self.num_negatives, replace=False))
 
         for user_idx in range(self.num_users):
-        # 포지티브 아이템 처리
+            # 포지티브 아이템 처리
             for item_idx in interaction_matrix[user_idx].indices:
                 self.data.append((user_idx, item_idx))
                 self.items_per_user[user_idx].append(item_idx)
-            
+
             # 네거티브 아이템 처리
             for neg_item_idx in negative_matrix[user_idx].indices:
                 self.neg_items_per_user[user_idx].append(neg_item_idx)
@@ -65,12 +63,10 @@ class MLPDataset(Dataset):
             neg_items (np.ndarray): 샘플링된 네거티브 아이템 리스트
         """
         user_id, positive_ids = self.data[index]
-        
+
         # num_negatives 개수만큼만 랜덤 선택
         negative_ids = np.random.choice(
-            self.neg_items_per_user[user_id], 
-            size=self.num_negatives, 
-            replace=False  # 필요한 경우 중복 허용
+            self.neg_items_per_user[user_id], size=self.num_negatives, replace=False  # 필요한 경우 중복 허용
         )
 
         user_id = torch.tensor([user_id], dtype=torch.long)

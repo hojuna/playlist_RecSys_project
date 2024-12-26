@@ -12,8 +12,8 @@ argparser.add_argument("--file-path", type=str, default="data/split_data")
 argparser.add_argument("--save-path", type=str, default="nmf/nmf_models")
 argparser.add_argument("--n-components", type=int, default=64)
 argparser.add_argument("--max-iter", type=int, default=500)
-argparser.add_argument("--train-matrix", type=str, default="train_matrix.mtx")
-argparser.add_argument("--valid-matrix", type=str, default="valid_matrix.mtx")
+argparser.add_argument("--train-matrix", type=str, default="train_data.mtx")
+argparser.add_argument("--valid-matrix", type=str, default="valid_data.mtx")
 
 
 def validate_model(H, valid_matrix, train_matrix, lambda_reg=0.1):

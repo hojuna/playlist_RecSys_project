@@ -1,152 +1,82 @@
 --------------------------------------------------
 
 
-Model: mlp_baseline/save_model/model_default_16_0.0001_lr.pt
-MAP: 0.0020
-Precision@1: 0.0030
-Precision@5: 0.0029
-Precision@10: 0.0028
-Recall@1: 0.0001
-Recall@5: 0.0004
-Recall@10: 0.0009
+Model: /home/comoz/main_project/playlist_project/mlp_baseline/save_model/model_final_default_8_0.0001_lr.pt
+MAP: 0.0247
+Precision@1: 0.0768
+Precision@5: 0.0675
+Precision@10: 0.0610
+Recall@1: 0.0013
+Recall@5: 0.0063
+Recall@10: 0.0112
 --------------------------------------------------
 
-Model: mlp_baseline/save_model/model_default_16_0.001_lr.pt
-MAP: 0.0021
-Precision@1: 0.0043
-Precision@5: 0.0034
-Precision@10: 0.0030
-Recall@1: 0.0001
-Recall@5: 0.0005
-Recall@10: 0.0010
+Model: /home/comoz/main_project/playlist_project/mlp_baseline/save_model/model_final_default_4_0.005_lr.pt
+MAP: 0.0298
+Precision@1: 0.0872
+Precision@5: 0.0756
+Precision@10: 0.0684
+Recall@1: 0.0016
+Recall@5: 0.0071
+Recall@10: 0.0128
 --------------------------------------------------
 
-Model: mlp_baseline/save_model/model_default_16_0.005_lr.pt
-MAP: 0.0039
-Precision@1: 0.0068
-Precision@5: 0.0077
-Precision@10: 0.0074
-Recall@1: 0.0002
-Recall@5: 0.0013
-Recall@10: 0.0024
+Model: /home/comoz/main_project/playlist_project/mlp_baseline/save_model/model_final_default_8_0.1_lr.pt
+MAP: 0.9999
+Precision@1: 0.9999
+Precision@5: 0.9999
+Precision@10: 1.0000
+Recall@1: 0.0315
+Recall@5: 0.1574
+Recall@10: 0.3148
 --------------------------------------------------
 
-Model: mlp_baseline/save_model/model_default_16_0.01_lr.pt
-MAP: 0.0041
-Precision@1: 0.0099
-Precision@5: 0.0076
-Precision@10: 0.0069
-Recall@1: 0.0003
-Recall@5: 0.0012
-Recall@10: 0.0022
+Model: /home/comoz/main_project/playlist_project/mlp_baseline/save_model/model_default_4_0.005_lr.pt
+MAP: 0.0298
+Precision@1: 0.0871
+Precision@5: 0.0756
+Precision@10: 0.0685
+Recall@1: 0.0016
+Recall@5: 0.0071
+Recall@10: 0.0128
 --------------------------------------------------
 
-Model: mlp_baseline/save_model/model_default_16_0.1_lr.pt
-MAP: 0.0040
-Precision@1: 0.0046
-Precision@5: 0.0070
-Precision@10: 0.0065
-Recall@1: 0.0002
-Recall@5: 0.0013
-Recall@10: 0.0023
+Model: /home/comoz/main_project/playlist_project/mlp_baseline/save_model/model_final_default_16_0.005_lr.pt
+MAP: 0.0328
+Precision@1: 0.0962
+Precision@5: 0.0819
+Precision@10: 0.0743
+Recall@1: 0.0019
+Recall@5: 0.0081
+Recall@10: 0.0146
 --------------------------------------------------
 
-Model: mlp_baseline/save_model/model_default_4_0.0001_lr.pt
-MAP: 0.0017
-Precision@1: 0.0010
-Precision@5: 0.0010
-Precision@10: 0.0012
-Recall@1: 0.0000
-Recall@5: 0.0002
-Recall@10: 0.0004
+Model: /home/comoz/main_project/playlist_project/mlp_baseline/save_model/model_final_default_4_0.01_lr.pt
+MAP: 0.0255
+Precision@1: 0.0722
+Precision@5: 0.0632
+Precision@10: 0.0586
+Recall@1: 0.0013
+Recall@5: 0.0055
+Recall@10: 0.0104
 --------------------------------------------------
 
-Model: mlp_baseline/save_model/model_default_4_0.001_lr.pt
-MAP: 0.0019
-Precision@1: 0.0027
-Precision@5: 0.0021
-Precision@10: 0.0019
-Recall@1: 0.0001
-Recall@5: 0.0004
-Recall@10: 0.0007
+Model: /home/comoz/main_project/playlist_project/mlp_baseline/save_model/model_default_4_0.0001_lr.pt
+MAP: 0.0237
+Precision@1: 0.0737
+Precision@5: 0.0652
+Precision@10: 0.0592
+Recall@1: 0.0014
+Recall@5: 0.0059
+Recall@10: 0.0106
 --------------------------------------------------
 
-Model: mlp_baseline/save_model/model_default_4_0.005_lr.pt
-MAP: 0.0025
-Precision@1: 0.0050
-Precision@5: 0.0038
-Precision@10: 0.0034
-Recall@1: 0.0002
-Recall@5: 0.0006
-Recall@10: 0.0012
---------------------------------------------------
-
-Model: mlp_baseline/save_model/model_default_4_0.01_lr.pt
-MAP: 0.0026
-Precision@1: 0.0025
-Precision@5: 0.0033
-Precision@10: 0.0035
-Recall@1: 0.0001
-Recall@5: 0.0007
-Recall@10: 0.0013
---------------------------------------------------
-
-Model: mlp_baseline/save_model/model_default_4_0.1_lr.pt
-MAP: 0.0022
-Precision@1: 0.0015
-Precision@5: 0.0019
-Precision@10: 0.0018
-Recall@1: 0.0001
-Recall@5: 0.0004
-Recall@10: 0.0007
---------------------------------------------------
-
-Model: mlp_baseline/save_model/model_default_8_0.0001_lr.pt
-MAP: 0.0020
-Precision@1: 0.0058
-Precision@5: 0.0034
-Precision@10: 0.0027
-Recall@1: 0.0001
-Recall@5: 0.0005
-Recall@10: 0.0008
---------------------------------------------------
-
-Model: mlp_baseline/save_model/model_default_8_0.001_lr.pt
-MAP: 0.0018
-Precision@1: 0.0013
-Precision@5: 0.0015
-Precision@10: 0.0015
-Recall@1: 0.0000
-Recall@5: 0.0002
-Recall@10: 0.0004
---------------------------------------------------
-
-Model: mlp_baseline/save_model/model_default_8_0.005_lr.pt
-MAP: 0.0035
-Precision@1: 0.0082
-Precision@5: 0.0064
-Precision@10: 0.0059
-Recall@1: 0.0003
-Recall@5: 0.0011
-Recall@10: 0.0020
---------------------------------------------------
-
-Model: mlp_baseline/save_model/model_default_8_0.01_lr.pt
-MAP: 0.0032
-Precision@1: 0.0056
-Precision@5: 0.0044
-Precision@10: 0.0044
-Recall@1: 0.0002
-Recall@5: 0.0008
-Recall@10: 0.0015
---------------------------------------------------
-
-Model: mlp_baseline/save_model/model_default_8_0.1_lr.pt
-MAP: 0.0030
-Precision@1: 0.0048
-Precision@5: 0.0050
-Precision@10: 0.0047
-Recall@1: 0.0002
-Recall@5: 0.0009
-Recall@10: 0.0018
+Model: /home/comoz/main_project/playlist_project/mlp_baseline/save_model/model_final_default_8_0.005_lr.pt
+MAP: 0.0320
+Precision@1: 0.1001
+Precision@5: 0.0824
+Precision@10: 0.0750
+Recall@1: 0.0019
+Recall@5: 0.0080
+Recall@10: 0.0143
 --------------------------------------------------

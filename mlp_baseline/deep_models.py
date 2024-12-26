@@ -3,13 +3,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class MLPModel(nn.Module):
+class DeepMLPModel(nn.Module):
     def __init__(self, num_users, num_items, model_dim=128, dropout=0.2):
-        super(MLPModel, self).__init__()
+        super(DeepMLPModel, self).__init__()
 
         # Embedding layers
         self.user_embedding = nn.Embedding(num_users, model_dim)
-        self.item_embedding = nn.Embedding(num_items, model_dim)
+        self.item_embedding = nn.Embedding(num_items, model_dim * 2)
 
         self.user_embedding.weight.data.uniform_(-0.005, 0.005)
         self.item_embedding.weight.data.uniform_(-0.005, 0.005)
@@ -23,15 +23,15 @@ class MLPModel(nn.Module):
         )
 
         self.item_mlp = nn.Sequential(
-            nn.LayerNorm(model_dim),
-            nn.Linear(model_dim, model_dim),
+            nn.LayerNorm(model_dim * 2),
+            nn.Linear(model_dim * 2, model_dim * 2),
             nn.GELU(),
             nn.Dropout(dropout),
         )
 
         self.final = nn.Sequential(
-            nn.LayerNorm(model_dim * 2),
-            nn.Linear(model_dim * 2, model_dim),
+            nn.LayerNorm(model_dim * 3),
+            nn.Linear(model_dim * 3, model_dim),
             nn.GELU(),
             nn.Dropout(dropout),
             nn.Linear(model_dim, 1),

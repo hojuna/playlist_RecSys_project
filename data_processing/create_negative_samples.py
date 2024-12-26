@@ -5,12 +5,14 @@ import numpy as np
 from scipy.io import mmread, mmwrite
 from scipy.sparse import csr_matrix
 from tqdm import tqdm
+
 # fmt: off
 parser = argparse.ArgumentParser()
 parser.add_argument("--default-output-path", type=str, default="/home/comoz/main_project/playlist_project/data/negative_sample/default")
 parser.add_argument("--raw-output-path", type=str, default="/home/comoz/main_project/playlist_project/data/negative_sample/raw")
 args = parser.parse_args()
 # fmt: on
+
 
 def create_negative_samples(
     raw_matrix: csr_matrix,
@@ -26,17 +28,17 @@ def create_negative_samples(
 
     # 상호작용이 없는 아이템의 빈도 계산
     item_frequencies = np.array(matrix.sum(axis=0)).flatten() + 1
-    
+
     # 멱법칙 적용 및 정규화
-    negative_frequencies = np.power(item_frequencies, 3/4)
-    
+    negative_frequencies = np.power(item_frequencies, 3 / 4)
+
     # 각 유저별 상호작용한 아이템 목록 생성
     user_interactions = {}
     for user_idx in range(num_users):
         # raw_matrix와 matrix에서 모든 상호작용 아이템 수집
-        raw_items = set(raw_matrix[user_idx,:].nonzero()[1])
-        matrix_items = set(matrix[user_idx,:].nonzero()[1])
-        user_interactions[user_idx] = raw_items 
+        raw_items = set(raw_matrix[user_idx, :].nonzero()[1])
+        matrix_items = set(matrix[user_idx, :].nonzero()[1])
+        user_interactions[user_idx] = raw_items
 
     # 전체 아이템 ID 집합
     all_items = set(range(num_items))
@@ -53,8 +55,8 @@ def create_negative_samples(
             continue
 
         # 해당 유저의 positive 상호작용 수 계산
-        num_positives = len(matrix[user_idx,:].nonzero()[1])
-        
+        num_positives = len(matrix[user_idx, :].nonzero()[1])
+
         # negative sampling num per user
         negative_sampling_num = num_negative_samples * num_epochs * num_positives
 
@@ -68,10 +70,7 @@ def create_negative_samples(
         # 네거티브 샘플링
         while num_sampled < negative_sampling_num:
             negative_items = np.random.choice(
-                candidate_items,
-                size=min(negative_sampling_num, len(candidate_items)),
-                replace=False,
-                p=weights
+                candidate_items, size=min(negative_sampling_num, len(candidate_items)), replace=False, p=weights
             )
 
             for negative_item in negative_items:
@@ -94,6 +93,7 @@ def create_negative_samples(
     with open(f"{output_path}/negative_samples.pkl", "wb") as f:
         pickle.dump(total_negative_samples, f)
 
+
 def main():
     raw_matrix = mmread("/home/comoz/main_project/playlist_project/data/playlist_song_matrix_50_50.mtx").tocsr()
     train_matrix = mmread("/home/comoz/main_project/playlist_project/data/split_data/train_matrix.mtx").tocsr()
@@ -106,13 +106,14 @@ def main():
     # for matrix_name, target_matrix in matrix_dict.items():
     #     for num_negative_samples in num_negative_samples_list:
     create_negative_samples(
-            raw_matrix,
-            train_matrix,
-            num_epochs=num_epochs,
-            num_negative_samples=4,
-            matrix_name="train",
-            output_path=args.default_output_path,
-        )
+        raw_matrix,
+        train_matrix,
+        num_epochs=num_epochs,
+        num_negative_samples=4,
+        matrix_name="train",
+        output_path=args.default_output_path,
+    )
+
 
 if __name__ == "__main__":
     main()

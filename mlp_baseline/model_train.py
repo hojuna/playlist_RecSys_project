@@ -10,24 +10,26 @@ import torch.nn as nn
 import torch.optim as optim
 from datasets import MLPDataset
 from models import MLPModel
+from deep_models import DeepMLPModel
 from scipy.io import mmread
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from scipy.sparse import csr_matrix
 
 # fmt: off
 argparser = ArgumentParser("preprocess_dataset")
 argparser.add_argument("--train-path", type=str, default="/home/comoz/main_project/playlist_project/data/split_data/train_data.mtx")
 argparser.add_argument("--valid-path", type=str, default="/home/comoz/main_project/playlist_project/data/split_data/valid_data.mtx")
 argparser.add_argument("--save-path", type=str, default="/home/comoz/main_project/playlist_project/mlp_baseline/save_model")
-argparser.add_argument("--train-negative-path", type=str, default="/home/comoz/main_project/playlist_project/data/negative_sample/default/train_default_5_epochs_4_negatives.mtx")
-argparser.add_argument("--valid-negative-path", type=str, default="/home/comoz/main_project/playlist_project/data/negative_sample/default/valid_default_5_epochs_4_negatives.mtx")
+argparser.add_argument("--train-negative-path", type=str, default="/home/comoz/main_project/playlist_project/data/split_data/negative_train_data_16.mtx")
+argparser.add_argument("--valid-negative-path", type=str, default="/home/comoz/main_project/playlist_project/data/split_data/negative_valid_data_16.mtx")
 argparser.add_argument("--negative-mode", type=str, default="default")
 argparser.add_argument("--num-epochs", type=int, default=5)
 argparser.add_argument("--train-batch-size", type=int, default=1024)
 argparser.add_argument("--valid-batch-size", type=int, default=4096)
 argparser.add_argument("--num-negatives", type=int, default=4)  # 4, 8, 16
 argparser.add_argument("--model-dim", type=int, default=128)
-argparser.add_argument("--dropout", type=float, default=0.5)    
+argparser.add_argument("--dropout", type=float, default=0.2)    
 argparser.add_argument("--lr", type=float, default=1e-3)  # 1e-4, 1e-3, 5e-3, 1e-2, 1e-1
 argparser.add_argument("--weight-decay", type=float, default=1e-4)
 argparser.add_argument("--log-interval", type=int, default=50)
@@ -35,15 +37,15 @@ argparser.add_argument("--valid-interval", type=int, default=200)
 argparser.add_argument("--num-workers", type=int, default=8)
 argparser.add_argument("--prefetch-factor", type=int, default=4)
 argparser.add_argument("--seed", type=int, default=42)
+argparser.add_argument("--model", type=str, default="mlp")
 # fmt: on
-
-
 
 
 def save_log(*args, **kwargs):
     result_file = f"mlp_baseline/training_results/training_log.txt"
-    with open(result_file, "a", encoding='utf-8') as f:
+    with open(result_file, "a", encoding="utf-8") as f:
         print(*args, **kwargs, file=f)
+
 
 def set_seed(seed: int):
     random.seed(seed)
@@ -62,23 +64,25 @@ def train_model(
     num_epochs: int,
     save_path: str,
     args: Namespace,
+    train_matrix: csr_matrix,
 ):
     model.train()
 
-    criterion = nn.BCEWithLogitsLoss(reduction="none")
-    best_valid_loss = float("inf")
+    # 유저별 가중치 계산
+    criterion = nn.BCEWithLogitsLoss(reduction="none")  # reduction='none'으로 변경
 
+    best_valid_loss = float("inf")
     step = 0
     avg_train_loss = torch.tensor(0.0, device=device)
-    state=True
+    state = True
     for epoch in range(num_epochs):
         for user_ids, positive_ids, negative_ids in train_loader:
             user_ids = user_ids.to(device)
             positive_ids = positive_ids.to(device)
             negative_ids = negative_ids.to(device)
             if state:
-                print(user_ids[:10],positive_ids[:10],negative_ids[:10])
-                state=False
+                print(user_ids[:10], positive_ids[:10], negative_ids[:10])
+                state = False
 
             total_ids = torch.cat([positive_ids, negative_ids], dim=1)
             # mixed precision training
@@ -88,10 +92,12 @@ def train_model(
 
                 positive_labels = torch.ones_like(positive_ids, device=device, dtype=torch.float)
                 negative_labels = torch.zeros_like(negative_ids, device=device, dtype=torch.float)
+
+                # 손실 계산 (reduction='none')
                 positive_loss = criterion(outputs[:, : positive_ids.size(1)], positive_labels)
                 negative_loss = criterion(outputs[:, positive_ids.size(1) :], negative_labels)
-                loss = (positive_loss.mean(axis=1) + negative_loss.mean(axis=1)) / 2
-                loss = loss.mean()
+
+                loss = ((positive_loss.mean(axis=1) + negative_loss.mean(axis=1))).mean() / 2
 
             loss.backward()
             optimizer.step()
@@ -125,7 +131,9 @@ def train_model(
                             "optimizer_state_dict": optimizer.state_dict(),
                             "loss": best_valid_loss,
                         },
-                        os.path.join(save_path, f"model_{args.negative_mode}_{args.num_negatives}_{args.lr}_lr.pt"),
+                        os.path.join(
+                            save_path, f"{args.model}_{epoch}_{args.negative_mode}_{args.num_negatives}_{args.lr}_lr.pt"
+                        ),
                     )
 
                 print(
@@ -135,10 +143,19 @@ def train_model(
                 )
 
     # 모든 에포크 반복문이 끝난 후 최종 학습 결과 저장
-    final_valid_loss, final_positive_accuracy, final_negative_accuracy = validate_model(
-        model, valid_loader, device
-    )
+    final_valid_loss, final_positive_accuracy, final_negative_accuracy = validate_model(model, valid_loader, device)
 
+    torch.save(
+        {
+            "epoch": epoch,
+            "model_state_dict": model.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict(),
+            "loss": best_valid_loss,
+        },
+        os.path.join(
+            save_path, f"final_{args.model}_{epoch}_{args.negative_mode}_{args.num_negatives}_{args.lr}_lr.pt"
+        ),
+    )
     # 최종 학습 결과를 로그 파일로 저장
     save_log(f"Final Training Results")
     save_log("-" * 50)
@@ -155,6 +172,7 @@ def train_model(
     save_log(f"Valid Negative Accuracy: {final_negative_accuracy:.4f}")
     save_log(f"Best Valid Loss: {best_valid_loss:.4f}")
     save_log("-" * 50)
+
 
 def validate_model(model: nn.Module, valid_loader: DataLoader, device: str) -> Tuple[float, float, float]:
     model.eval()
@@ -205,7 +223,6 @@ def main():
     result_file = f"mlp_baseline/training_results/training_log.txt"
     os.makedirs(os.path.dirname(result_file), exist_ok=True)
 
-
     args = argparser.parse_args()
     torch.cuda.empty_cache()
 
@@ -215,8 +232,6 @@ def main():
     train_matrix = mmread(args.train_path).tocsr()
     valid_matrix = mmread(args.valid_path).tocsr()
 
-
-
     def _train():
         # with open("/home/comoz/main_project/playlist_project/data/negative_sample/default/negative_samples.pkl", "rb") as f:
         #     train_negative_matrix = pickle.load(f)
@@ -224,8 +239,12 @@ def main():
         # with open(args.valid_negative_path, "rb") as f:
         #     valid_negative_matrix = pickle.load(f)
 
-        train_negative_matrix = mmread("/home/comoz/main_project/playlist_project/data/split_data/negative_train_data.mtx").tocsr()
-        valid_negative_matrix = mmread("/home/comoz/main_project/playlist_project/data/split_data/negative_valid_data.mtx").tocsr()
+        train_negative_matrix = mmread(
+            "/home/comoz/main_project/playlist_project/data/split_data/negative_train_data.mtx"
+        ).tocsr()
+        valid_negative_matrix = mmread(
+            "/home/comoz/main_project/playlist_project/data/split_data/negative_valid_data.mtx"
+        ).tocsr()
 
         # 데이터셋 생성
         train_dataset = MLPDataset(train_matrix, train_negative_matrix, num_negatives=args.num_negatives)
@@ -255,7 +274,11 @@ def main():
 
         # 모델 설정
         num_users, num_items = train_matrix.shape
-        model = MLPModel(num_users, num_items, model_dim=args.model_dim, dropout=args.dropout)
+        if args.model == "mlp":
+            model = MLPModel(num_users, num_items, model_dim=args.model_dim, dropout=args.dropout)
+        elif args.model == "deep_mlp":
+            print("Deep MLP Model")
+            model = DeepMLPModel(num_users, num_items, model_dim=args.model_dim, dropout=args.dropout)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model = model.to(device)
 
@@ -278,22 +301,20 @@ def main():
             num_epochs=args.num_epochs,
             save_path=args.save_path,
             args=args,
+            train_matrix=train_matrix,
         )
+
     lr_list = [1e-4, 1e-3, 5e-3, 1e-2, 1e-1]
     num_negatives_list = [4, 8, 16]
-    negative_mode_list = ["default"]
-    _train()
 
-    # for lr in lr_list:
-    #     for num_negatives in num_negatives_list:
-    #         for negative_mode in negative_mode_list:
-    #             args.lr = lr
-    #             args.num_negatives = num_negatives
-    #             args.negative_mode = negative_mode
-    #             args.train_negative_path = f"/home/comoz/main_project/playlist_project/data/negative_sample/{args.negative_mode}/train_{args.negative_mode}_5_epochs_{args.num_negatives}_negatives.mtx"
-    #             args.valid_negative_path = f"/home/comoz/main_project/playlist_project/data/negative_sample/{args.negative_mode}/valid_{args.negative_mode}_5_epochs_{args.num_negatives}_negatives.mtx"
+    for lr in lr_list:
+        for num_negatives in num_negatives_list:
+            args.lr = lr
+            args.num_negatives = num_negatives
+            args.train_negative_path = f"/home/comoz/main_project/playlist_project/data/split_data/negative_train_data_{args.num_negatives}.mtx"
+            args.valid_negative_path = f"/home/comoz/main_project/playlist_project/data/split_data/negative_valid_data_{args.num_negatives}.mtx"
 
-    #             _train()
+            _train()
 
 
 if __name__ == "__main__":
